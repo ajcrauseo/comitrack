@@ -1,36 +1,168 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ComiTrack 📊
 
-## Getting Started
+> Aplicación web personal para la gestión y cálculo automático de comisiones mensuales.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Descripción
+
+ComiTrack es una herramienta de uso personal construida con **Next.js 16 (App Router)**, **Tailwind CSS v4**, **Prisma 6** y **PostgreSQL**. Permite registrar y calcular comisiones de cuatro fuentes distintas, filtrando todo por un selector global de **Mes y Año** ubicado en la barra de navegación.
+
+---
+
+## Stack Tecnológico
+
+| Tecnología | Versión | Propósito |
+|---|---|---|
+| [Next.js](https://nextjs.org/) | 16.x | Framework React (App Router + Server Actions) |
+| [Tailwind CSS](https://tailwindcss.com/) | v4 | Estilos y diseño (Dark Mode) |
+| [Prisma](https://www.prisma.io/) | 6.x | ORM y migraciones de base de datos |
+| [PostgreSQL](https://www.postgresql.org/) | — | Base de datos relacional |
+| [Zustand](https://zustand-demo.pmnd.rs/) | 5.x | Estado global (selector Mes/Año) |
+| [Lucide React](https://lucide.dev/) | — | Iconografía |
+| [date-fns](https://date-fns.org/) | 4.x | Utilidades de fechas |
+
+---
+
+## Funcionalidades
+
+### 🎛️ Selector Global de Mes y Año
+Disponible en la Navbar superior. Todos los datos, cálculos y CRUDs de la aplicación filtran automáticamente según el período seleccionado.
+
+### 1. Dashboard Principal (`/`)
+Muestra un resumen de comisiones para el mes seleccionado:
+- 💠 Total por **Servicio Técnico**
+- 💠 Total por **Compras de Celulares**
+- 💠 Total por **Ventas de Celulares**
+- 💠 Total por **Ventas Generales**
+- 🏆 **Total de Comisiones** (sumatoria de las 4 fuentes)
+
+### 2. Servicio Técnico (`/servicio-tecnico`)
+CRUD diario de reparaciones (`coders`). Cada reparación puede tener múltiples servicios con las siguientes comisiones:
+
+| Tipo de Servicio | Comisión |
+|---|---|
+| Módulo, Batería, Pin de carga o ST >$20.000 | $1.500 |
+| Revisión Aprobada | $2.000 |
+| Limpieza (16484, 16485, mantpin) o ST <$20.000 | $650 |
+| Revisión denegada / Sin reparación / Garantía | $0 |
+
+### 3. Compras de Celulares *(próximamente)*
+CRUD mensual de ingresos al inventario. Sólo iPhones 12 en adelante (excluye Mini, SE, 16e, 17e).
+
+| Equipos en el mes | Comisión |
+|---|---|
+| 1 equipo | $2.000 total |
+| 2 equipos | $2.500 c/u ($5.000) |
+| 3 equipos | $3.500 c/u ($10.500) |
+| 4 o más | $4.500 c/u |
+
+### 4. Ventas de Celulares *(próximamente)*
+Formulario mensual con cantidad y volumen facturado. Comisión sobre el volumen:
+
+| Cantidad | Porcentaje |
+|---|---|
+| 1 a 3 | 0.5% |
+| 4 | 0.8% |
+| 5 a 9 | 1% |
+| 10 o más | 1.6% |
+
+### 5. Ventas Generales *(próximamente)*
+Formulario mensual. Calcula el **Volumen Base Comisionable** restando el volumen de Ventas de Celulares al Volumen Bruto total, y aplica:
+
+| Objetivo | Porcentaje |
+|---|---|
+| < 100% | 1% |
+| 100% | 1.4% |
+| 110% | 1.6% |
+| ≥ 125% | 1.8% |
+
+---
+
+## Estructura del Proyecto
+
+```
+comitrack/
+├── prisma/
+│   └── schema.prisma          # Modelos y enums de la base de datos
+├── src/
+│   ├── actions/               # Server Actions (lógica de negocio + DB)
+│   │   ├── dashboard.ts       # Cálculo del resumen mensual
+│   │   └── technicalService.ts
+│   ├── app/
+│   │   ├── layout.tsx         # Root layout con Navbar
+│   │   ├── page.tsx           # Dashboard Principal
+│   │   ├── globals.css
+│   │   └── servicio-tecnico/
+│   │       └── page.tsx       # CRUD Servicio Técnico
+│   ├── components/
+│   │   └── global/
+│   │       └── Navbar.tsx     # Navbar con selector Mes/Año y navegación
+│   ├── lib/
+│   │   ├── constants.ts       # Tipos, tarifas y etiquetas de servicios
+│   │   ├── prisma.ts          # Singleton de PrismaClient
+│   │   └── utils.ts           # cn() y formatARS
+│   └── store/
+│       └── useDateStore.ts    # Estado global Mes/Año (Zustand)
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Primeros Pasos
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Prerrequisitos
+- Node.js 18+
+- PostgreSQL (local o en la nube)
 
-## Learn More
+### Instalación
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# 1. Clonar el repositorio
+git clone <url-del-repositorio>
+cd comitrack
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# 2. Instalar dependencias
+npm install
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# 3. Configurar la base de datos
+cp .env.example .env
+# Editar .env con tu DATABASE_URL de PostgreSQL
 
-## Deploy on Vercel
+# 4. Aplicar el esquema a la base de datos y generar el cliente
+npx prisma db push
+npx prisma generate
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# 5. Iniciar el servidor de desarrollo
+npm run dev
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Abrir [http://localhost:3000](http://localhost:3000) en el navegador.
+
+### Variables de Entorno
+
+Copiar `.env.example` a `.env` y completar con tus valores:
+
+```env
+DATABASE_URL="postgresql://usuario:contraseña@host:5432/comitrack?schema=public"
+```
+
+---
+
+## Scripts Disponibles
+
+| Comando | Descripción |
+|---|---|
+| `npm run dev` | Servidor de desarrollo con Hot Reload |
+| `npm run build` | Build optimizado para producción |
+| `npm run start` | Inicia el servidor en modo producción |
+| `npm run lint` | Ejecuta el linter de ESLint |
+| `npx prisma db push` | Sincroniza el schema con la base de datos |
+| `npx prisma studio` | Abre Prisma Studio (explorador visual de DB) |
+
+---
+
+## Notas Técnicas
+
+- **Timezone:** Todas las fechas se calculan en UTC puro (`Date.UTC`) para evitar desfasajes entre el servidor (UTC) y la base de datos. Esto es especialmente importante para filtros por mes en zonas horarias como Argentina (UTC-3).
+- **Server Actions:** Toda la lógica de base de datos y los cálculos de comisiones se ejecutan exclusivamente en el servidor. El cliente sólo recibe los resultados calculados.
+- **Estado Global:** El selector de Mes/Año vive en un store de Zustand, lo que permite que cualquier componente reaccione al cambio sin prop-drilling.

@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==========================================
+// 2. SERVICIO TÉCNICO
+// ==========================================
+model TechnicalService {
+  id        String   @id @default(uuid())
+  coders    String   @unique // ID único de reparación
+  date      DateTime // Fecha exacta del registro
+  model     String
+  branch    String
+  
+  // Relación 1 a N con los servicios realizados a este equipo
+  services  ServiceItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ServiceItem {
+  id                 String           @id @default(uuid())
+  technicalServiceId String
+  technicalService   TechnicalService @relation(fields: [technicalServiceId], references: [id], onDelete: Cascade)
+  
+  serviceType        ServiceCategory
+  
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+enum ServiceCategory {
+  MODULO_BATERIA_PIN_O_MAYOR_20K // $1.500
+  REVISION_APROBADA              // $2.000
+  LIMPIEZA_O_MENOR_20K           // $650
+  DENEGADA_SIN_REPARACION        // $0
+}
+
+// ==========================================
+// 3. COMPRAS DE CELULARES / DISPOSITIVOS
+// ==========================================
+model DevicePurchase {
+  id            String   @id @default(uuid())
+  purchaseOrder String   @unique 
+  date          DateTime 
+  model         String   // Ej: "iPhone 13 Pro"
+  capacity      Capacity
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+enum Capacity {
+  GB_128
+  GB_256
+  GB_512
+  TB_1
+  TB_2
+}
+
+// ==========================================
+// 4. VENTAS DE CELULARES (Registro Mensual)
+// ==========================================
+model DeviceSalesMonthly {
+  id            String   @id @default(uuid())
+  month         Int      // 1-12
+  year          Int
+  totalQuantity Int      // Cantidad total de equipos
+  totalVolume   Float    // Monto total en pesos
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([month, year])
+}
+
+// ==========================================
+// 5. VENTAS GENERALES (Registro Mensual)
+// ==========================================
+model GeneralSalesMonthly {
+  id               String            @id @default(uuid())
+  month            Int
+  year             Int
+  grossSalesVolume Float             // Volumen bruto
+  target           TargetAchievement // Objetivo alcanzado
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([month, year])
+}
+
+enum TargetAchievement {
+  LESS_THAN_100     // < 100% (1%)
+  EXACTLY_100       // 100% (1.4%)
+  EXACTLY_110       // 110% (1.6%)
+  GREATER_EQUAL_125 // >= 125% (1.8%)
+}
