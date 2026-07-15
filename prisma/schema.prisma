@@ -30,6 +30,7 @@ model ServiceItem {
   technicalService   TechnicalService @relation(fields: [technicalServiceId], references: [id], onDelete: Cascade)
   
   serviceType        ServiceCategory
+  sku                String?          // Código de producto (SKU) del servicio
   
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt

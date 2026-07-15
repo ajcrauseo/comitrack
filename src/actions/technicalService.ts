@@ -13,7 +13,7 @@ export async function getTechnicalServices(month: number, year: number) {
     const services = await prisma.technicalService.findMany({
       where: { date: { gte: startDate, lte: endDate } },
       include: { services: true },
-      orderBy: { date: "desc" },
+      orderBy: { date: "asc" },
     });
 
     return { success: true, data: services };
@@ -28,7 +28,7 @@ export async function addTechnicalService(data: {
   date: string;
   model: string;
   branch: string;
-  services: ServiceCategory[];
+  services: { serviceType: ServiceCategory; sku?: string }[];
 }) {
   try {
     // Verificar si el coders ya existe
@@ -48,8 +48,9 @@ export async function addTechnicalService(data: {
         model: data.model,
         branch: data.branch,
         services: {
-          create: data.services.map((serviceType) => ({
+          create: data.services.map(({ serviceType, sku }) => ({
             serviceType,
+            ...(sku ? { sku } : {}),
           })),
         },
       },
@@ -62,6 +63,54 @@ export async function addTechnicalService(data: {
   } catch (error) {
     console.error("Error adding technical service:", error);
     return { success: false, error: "Error al guardar el registro." };
+  }
+}
+
+export async function updateTechnicalService(
+  id: string,
+  data: {
+    coders: string;
+    date: string;
+    model: string;
+    branch: string;
+    services: { serviceType: ServiceCategory; sku?: string }[];
+  }
+) {
+  try {
+    // Verificar unicidad de coders (ignorando el propio registro)
+    const existing = await prisma.technicalService.findFirst({
+      where: { coders: data.coders, NOT: { id } },
+    });
+
+    if (existing) {
+      return { success: false, error: "El código de reparación (coders) ya existe en otro registro." };
+    }
+
+    // Actualizar campos y reemplazar servicios
+    const updated = await prisma.technicalService.update({
+      where: { id },
+      data: {
+        coders: data.coders,
+        date: new Date(data.date),
+        model: data.model,
+        branch: data.branch,
+        services: {
+          deleteMany: {}, // borra todos los ServiceItems relacionados
+          create: data.services.map(({ serviceType, sku }) => ({
+            serviceType,
+            ...(sku ? { sku } : {}),
+          })),
+        },
+      },
+      include: { services: true },
+    });
+
+    revalidatePath("/servicio-tecnico");
+    revalidatePath("/");
+    return { success: true, data: updated };
+  } catch (error) {
+    console.error("Error updating technical service:", error);
+    return { success: false, error: "Error al actualizar el registro." };
   }
 }
 
