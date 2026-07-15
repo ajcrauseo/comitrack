@@ -397,7 +397,7 @@ export default function ServicioTecnicoPage() {
           </h1>
           <div className="flex items-center gap-4 bg-slate-900 border border-slate-800 rounded-xl p-3 sm:p-4 w-full sm:w-auto shadow-sm">
             <div className="flex-1 sm:flex-none text-left sm:text-right">
-              <p className="text-xs text-slate-500 uppercase font-semibold tracking-wider mb-1.5">Equipos</p>
+              <p className="text-xs text-slate-500 uppercase font-semibold tracking-wider mb-1.5">Reparaciones Exitosas</p>
               <p className="text-2xl font-bold text-slate-200 tabular-nums leading-none">
                 {validRepairsCount}
               </p>
