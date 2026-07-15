@@ -382,23 +382,33 @@ export default function ServicioTecnicoPage() {
     services.reduce((acc, curr) => acc + (techRates[curr.serviceType as ServiceCategory] || 0), 0);
 
   const monthTotal = records.reduce((acc, r) => acc + calculateRecordTotal(r.services), 0);
+  const validRepairsCount = records.filter(r => calculateRecordTotal(r.services) > 0).length;
 
   return (
     <>
       <div className="space-y-5 sm:space-y-6">
         {/* Page header */}
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-3">
           <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight flex items-center gap-2.5">
             <div className="p-1.5 sm:p-2 bg-blue-500/10 rounded-lg shrink-0">
               <Wrench className="h-5 w-5 sm:h-6 sm:w-6 text-blue-400" />
             </div>
             <span>Servicio Técnico</span>
           </h1>
-          <div className="text-right shrink-0">
-            <p className="text-xs text-slate-500">Total del mes</p>
-            <p className="text-xl sm:text-2xl font-bold text-blue-400 tabular-nums">
-              {formatARS.format(monthTotal)}
-            </p>
+          <div className="flex items-center gap-4 bg-slate-900 border border-slate-800 rounded-xl p-3 sm:p-4 w-full sm:w-auto shadow-sm">
+            <div className="flex-1 sm:flex-none text-left sm:text-right">
+              <p className="text-xs text-slate-500 uppercase font-semibold tracking-wider mb-1.5">Equipos</p>
+              <p className="text-2xl font-bold text-slate-200 tabular-nums leading-none">
+                {validRepairsCount}
+              </p>
+            </div>
+            <div className="w-px h-10 bg-slate-800" />
+            <div className="flex-1 sm:flex-none text-right">
+              <p className="text-xs text-slate-500 uppercase font-semibold tracking-wider mb-1.5">Total</p>
+              <p className="text-2xl font-bold text-blue-400 tabular-nums leading-none">
+                {formatARS.format(monthTotal)}
+              </p>
+            </div>
           </div>
         </div>
 
