@@ -47,7 +47,7 @@ CRUD diario de reparaciones (`coders`). Cada reparación puede tener múltiples 
 | Limpieza (16484, 16485, mantpin) o ST <$20.000 | $650 |
 | Revisión denegada / Sin reparación / Garantía | $0 |
 
-### 3. Compras de Celulares *(próximamente)*
+### 3. Compras de Celulares
 CRUD mensual de ingresos al inventario. Sólo iPhones 12 en adelante (excluye Mini, SE, 16e, 17e).
 
 | Equipos en el mes | Comisión |
@@ -57,7 +57,7 @@ CRUD mensual de ingresos al inventario. Sólo iPhones 12 en adelante (excluye Mi
 | 3 equipos | $3.500 c/u ($10.500) |
 | 4 o más | $4.500 c/u |
 
-### 4. Ventas de Celulares *(próximamente)*
+### 4. Ventas de Celulares
 Formulario mensual con cantidad y volumen facturado. Comisión sobre el volumen:
 
 | Cantidad | Porcentaje |
@@ -67,7 +67,7 @@ Formulario mensual con cantidad y volumen facturado. Comisión sobre el volumen:
 | 5 a 9 | 1% |
 | 10 o más | 1.6% |
 
-### 5. Ventas Generales *(próximamente)*
+### 5. Ventas Generales
 Formulario mensual. Calcula el **Volumen Base Comisionable** restando el volumen de Ventas de Celulares al Volumen Bruto total, y aplica:
 
 | Objetivo | Porcentaje |
@@ -88,16 +88,27 @@ comitrack/
 ├── src/
 │   ├── actions/               # Server Actions (lógica de negocio + DB)
 │   │   ├── dashboard.ts       # Cálculo del resumen mensual
+│   │   ├── devicePurchase.ts  # CRUD Compras de equipos
+│   │   ├── deviceSales.ts     # Registro mensual Ventas de equipos
+│   │   ├── generalSales.ts    # Registro mensual Ventas Generales
 │   │   └── technicalService.ts
 │   ├── app/
 │   │   ├── layout.tsx         # Root layout con Navbar
 │   │   ├── page.tsx           # Dashboard Principal
 │   │   ├── globals.css
-│   │   └── servicio-tecnico/
-│   │       └── page.tsx       # CRUD Servicio Técnico
+│   │   ├── compras/           # CRUD Compras
+│   │   │   └── page.tsx
+│   │   ├── servicio-tecnico/  # CRUD Servicio Técnico
+│   │   │   └── page.tsx
+│   │   ├── ventas-equipos/    # Registro Ventas Equipos
+│   │   │   └── page.tsx
+│   │   └── ventas-generales/  # Registro Ventas Generales
+│   │       └── page.tsx
 │   ├── components/
-│   │   └── global/
-│   │       └── Navbar.tsx     # Navbar con selector Mes/Año y navegación
+│   │   ├── global/
+│   │   │   └── Navbar.tsx     # Navbar con selector Mes/Año y navegación
+│   │   └── ui/
+│   │       └── DatePicker.tsx # Selector de fechas custom
 │   ├── lib/
 │   │   ├── constants.ts       # Tipos, tarifas y etiquetas de servicios
 │   │   ├── prisma.ts          # Singleton de PrismaClient
