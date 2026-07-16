@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useDateStore } from "@/store/useDateStore";
+import { useRole } from "@/lib/role-context";
+import { logout } from "@/actions/auth";
 import {
   Calculator,
   Menu,
@@ -12,6 +14,9 @@ import {
   ShoppingCart,
   Smartphone,
   TrendingUp,
+  Settings,
+  LogOut,
+  Eye,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -42,6 +47,7 @@ const navLinks = [
 
 export function Navbar() {
   const { month, year, setMonth, setYear } = useDateStore();
+  const { role } = useRole();
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -51,6 +57,8 @@ export function Navbar() {
     document.body.style.overflow = menuOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
+
+  if (pathname === "/login") return null;
 
   return (
     <>
@@ -93,13 +101,43 @@ export function Navbar() {
               </div>
             </div>
 
-            {/* Right: selectors + hamburger */}
-            <div className="flex items-center gap-2 shrink-0">
-              <div className="flex items-center gap-1.5">
+            {/* Right: role badge + selectors + hamburger */}
+            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
+              {/* Compact role badge — all sizes */}
+              {role === "VIEWER" && (
+                <span className="flex items-center gap-1 px-1.5 py-1 rounded-md text-xs text-amber-400/70 bg-amber-400/5 border border-amber-400/10" title="Modo solo lectura">
+                  <Eye size={12} />
+                  <span className="hidden sm:inline">Solo lectura</span>
+                </span>
+              )}
+
+              {/* Desktop-only: settings + logout */}
+              <div className="hidden lg:flex items-center gap-1 mr-1">
+                {role === "ADMIN" && (
+                  <Link
+                    href="/settings"
+                    className="flex items-center gap-1 text-xs text-slate-400 hover:text-indigo-400 transition-colors px-2 py-1 rounded-md hover:bg-slate-800/50"
+                  >
+                    <Settings size={14} />
+                    <span className="hidden xl:inline">Ajustes</span>
+                  </Link>
+                )}
+                {role && (
+                  <button
+                    onClick={async () => { await logout(); }}
+                    className="flex items-center gap-1 text-xs text-slate-400 hover:text-red-400 transition-colors px-2 py-1 rounded-md hover:bg-slate-800/50"
+                  >
+                    <LogOut size={14} />
+                    <span className="hidden xl:inline">Salir</span>
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-1 sm:gap-1.5">
                 <select
                   value={month}
                   onChange={(e) => setMonth(Number(e.target.value))}
-                  className="bg-slate-800 text-slate-200 border border-slate-700 rounded-md py-1 px-1.5 sm:px-3 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all max-w-[90px] sm:max-w-none"
+                  className="bg-slate-800 text-slate-200 border border-slate-700 rounded-md py-1 px-1 sm:px-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all max-w-[80px] sm:max-w-none"
                 >
                   {months.map((m) => (
                     <option key={m.value} value={m.value}>{m.label}</option>
@@ -109,7 +147,7 @@ export function Navbar() {
                 <select
                   value={year}
                   onChange={(e) => setYear(Number(e.target.value))}
-                  className="bg-slate-800 text-slate-200 border border-slate-700 rounded-md py-1 px-1.5 sm:px-3 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all w-[64px] sm:w-auto"
+                  className="bg-slate-800 text-slate-200 border border-slate-700 rounded-md py-1 px-1 sm:px-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all w-[58px] sm:w-[68px]"
                 >
                   {years.map((y) => (
                     <option key={y} value={y}>{y}</option>
@@ -141,25 +179,52 @@ export function Navbar() {
             className="fixed top-14 sm:top-16 left-0 right-0 z-40 lg:hidden bg-slate-900 border-b border-slate-800 shadow-xl"
             style={{ animation: "drawerIn 0.2s ease-out" }}
           >
-            <div className="px-4 py-3 grid grid-cols-2 gap-1 sm:grid-cols-3">
-              {navLinks.map((link) => {
-                const isActive = pathname === link.href;
-                const Icon = link.icon;
-                return (
+            <div className="px-4 py-3 space-y-3">
+              <div className="grid grid-cols-2 gap-1 sm:grid-cols-3">
+                {navLinks.map((link) => {
+                  const isActive = pathname === link.href;
+                  const Icon = link.icon;
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={`flex items-center gap-2.5 px-3 py-3 rounded-xl text-sm font-medium transition-colors ${
+                        isActive
+                          ? "bg-slate-800 text-indigo-400"
+                          : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
+                      }`}
+                    >
+                      <Icon className="h-4 w-4 shrink-0" />
+                      {link.name}
+                    </Link>
+                  );
+                })}
+              </div>
+
+              <div className="flex items-center gap-2 border-t border-slate-800 pt-3">
+                {role === "ADMIN" ? (
                   <Link
-                    key={link.href}
-                    href={link.href}
-                    className={`flex items-center gap-2.5 px-3 py-3 rounded-xl text-sm font-medium transition-colors ${
-                      isActive
-                        ? "bg-slate-800 text-indigo-400"
-                        : "text-slate-400 hover:text-slate-200 hover:bg-slate-800/50"
-                    }`}
+                    href="/settings"
+                    onClick={() => setMenuOpen(false)}
+                    className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-indigo-400 hover:bg-slate-800/50 transition-colors"
                   >
-                    <Icon className="h-4 w-4 shrink-0" />
-                    {link.name}
+                    <Settings className="h-4 w-4 shrink-0" />
+                    Ajustes
                   </Link>
-                );
-              })}
+                ) : (
+                  <span className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm text-amber-400/70">
+                    <Eye className="h-4 w-4 shrink-0" />
+                    Modo solo lectura
+                  </span>
+                )}
+                <button
+                  onClick={async () => { await logout(); }}
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-slate-800/50 transition-colors ml-auto"
+                >
+                  <LogOut className="h-4 w-4 shrink-0" />
+                  Cerrar sesión
+                </button>
+              </div>
             </div>
           </div>
         </>

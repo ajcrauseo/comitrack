@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { ServiceCategory } from "@/lib/constants";
+import { requireAdmin } from "@/lib/auth";
 
 export async function getTechnicalServices(month: number, year: number) {
   // Evitamos problemas de Timezone creando las fechas directamente en UTC
@@ -31,6 +32,7 @@ export async function addTechnicalService(data: {
   services: { serviceType: ServiceCategory; sku?: string }[];
 }) {
   try {
+    await requireAdmin();
     // Verificar si el coders ya existe
     const existing = await prisma.technicalService.findUnique({
       where: { coders: data.coders },
@@ -77,6 +79,7 @@ export async function updateTechnicalService(
   }
 ) {
   try {
+    await requireAdmin();
     // Verificar unicidad de coders (ignorando el propio registro)
     const existing = await prisma.technicalService.findFirst({
       where: { coders: data.coders, NOT: { id } },
@@ -116,6 +119,7 @@ export async function updateTechnicalService(
 
 export async function deleteTechnicalService(id: string) {
   try {
+    await requireAdmin();
     await prisma.technicalService.delete({
       where: { id },
     });

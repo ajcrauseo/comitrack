@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useTransition } from "react";
 import { useDateStore } from "@/store/useDateStore";
+import { useRole } from "@/lib/role-context";
 import { getGeneralSales, upsertGeneralSales } from "@/actions/generalSales";
 import {
   TargetKey,
@@ -16,6 +17,7 @@ const TARGETS: TargetKey[] = ["LESS_THAN_100", "EXACTLY_100", "EXACTLY_110", "GR
 
 export default function VentasGeneralesPage() {
   const { month, year } = useDateStore();
+  const { role } = useRole();
   const [isPending, startTransition] = useTransition();
   const [isSaving, setIsSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
@@ -85,8 +87,9 @@ export default function VentasGeneralesPage() {
         {isPending && <Loader2 className="h-5 w-5 text-purple-400 animate-spin" />}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
+      <div className={`grid grid-cols-1 ${role === "ADMIN" ? "lg:grid-cols-2" : ""} gap-5 sm:gap-6`}>
         {/* Form */}
+        {role === "ADMIN" && (
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-white mb-1">Registro Mensual</h2>
           <p className="text-xs text-slate-500 mb-5">
@@ -111,7 +114,7 @@ export default function VentasGeneralesPage() {
                 step="0.01"
                 value={grossVolume}
                 onChange={(e) => setGrossVolume(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="Ej: 15000000"
               />
             </div>
@@ -162,6 +165,7 @@ export default function VentasGeneralesPage() {
             </button>
           </form>
         </div>
+        )}
 
         {/* Breakdown */}
         <div className="space-y-4">

@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { CapacityKey } from "@/lib/constants";
+import { requireAdmin } from "@/lib/auth";
 
 export async function getDevicePurchases(month: number, year: number) {
   const startDate = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0, 0));
@@ -27,6 +28,7 @@ export async function addDevicePurchase(data: {
   capacity: CapacityKey;
 }) {
   try {
+    await requireAdmin();
     const existing = await prisma.devicePurchase.findUnique({
       where: { purchaseOrder: data.purchaseOrder },
     });
@@ -54,6 +56,7 @@ export async function addDevicePurchase(data: {
 
 export async function deleteDevicePurchase(id: string) {
   try {
+    await requireAdmin();
     await prisma.devicePurchase.delete({ where: { id } });
     revalidatePath("/compras");
     revalidatePath("/");
@@ -74,6 +77,7 @@ export async function updateDevicePurchase(
   }
 ) {
   try {
+    await requireAdmin();
     const existing = await prisma.devicePurchase.findFirst({
       where: { purchaseOrder: data.purchaseOrder, NOT: { id } },
     });

@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { TargetKey } from "@/lib/constants";
+import { requireAdmin } from "@/lib/auth";
 
 export async function getGeneralSales(month: number, year: number) {
   try {
@@ -34,6 +35,7 @@ export async function upsertGeneralSales(
   data: { grossSalesVolume: number; target: TargetKey }
 ) {
   try {
+    await requireAdmin();
     const record = await prisma.generalSalesMonthly.upsert({
       where: { month_year: { month, year } },
       update: { grossSalesVolume: data.grossSalesVolume, target: data.target },

@@ -172,6 +172,58 @@ DATABASE_URL="postgresql://usuario:contraseña@host:5432/comitrack?schema=public
 
 ---
 
+## Autenticación y Roles
+
+ComiTrack tiene un sistema de autenticación con dos roles:
+
+| Rol | Permisos |
+|---|---|
+| **Admin** | CRUD completo en todas las secciones. Acceso a Configuración (`/settings`) para cambiar su contraseña y el PIN del viewer. |
+| **Viewer** | Solo lectura. No ve formularios, botones de edición ni eliminación. Sin acceso a Configuración. |
+
+### Flujo de autenticación
+
+1. El usuario inicia sesión desde `/login` con usuario y contraseña (Admin) o PIN de 4 dígitos (Viewer).
+2. El servidor crea un **JWT** firmado con `HS256` y 24h de expiración, almacenado en una cookie httpOnly (`session`).
+3. Simultáneamente, se setea una cookie `role` (no httpOnly) con el texto plano `"ADMIN"` o `"VIEWER"`.
+4. El **middleware** verifica el JWT en cada request — si es inválido o expiró, redirige a `/login`.
+5. El **layout** (Server Component) lee la cookie `role` y la pasa como `initialRole` al `RoleProvider`.
+6. Las **Server Actions** de escritura llaman a `requireAdmin()`, que verifica el JWT real impidiendo cualquier modificación no autorizada.
+
+### Arquitectura de permisos
+
+```
+┌──────────────────────────────────────────────────────┐
+│                   Middleware (proxy.ts)                │
+│  Verifica JWT → redirige a /login si es inválido     │
+├──────────────────────────────────────────────────────┤
+│              Layout (Server Component)                 │
+│  getRoleCookie() → initialRole → RoleProvider         │
+├──────────────────────────────────────────────────────┤
+│         RoleProvider (Client Context)                  │
+│  Expone { role } a toda la app (sin useState)         │
+├──────────────────────────────────────────────────────┤
+│   Páginas: role === "ADMIN" ? formularios : ocultos  │
+│   Server Actions: requireAdmin() → JWT verification   │
+└──────────────────────────────────────────────────────┘
+```
+
+La cookie `role` es solo para la UI. La seguridad real está en el JWT: si alguien manipula la cookie `role` a `"ADMIN"`, igual no puede escribir porque `requireAdmin()` verifica el JWT firmado contra `JWT_SECRET`.
+
+### Navbar según el rol
+
+| Elemento | Admin | Viewer |
+|---|---|---|
+| Badge "Solo lectura" | No | Sí |
+| Link Ajustes (desktop) | Sí | No |
+| Botón Salir (desktop) | Sí | Sí |
+| Drawer: Ajustes | Sí | "Modo solo lectura" |
+| Drawer: Cerrar sesión | Sí | Sí |
+
+Al cerrar sesión o cambiar de rol, se invalida el cache del router de Next.js con `revalidatePath` para evitar que queden datos stale en memoria.
+
+---
+
 ## Notas Técnicas
 
 - **Timezone:** Todas las fechas se calculan en UTC puro (`Date.UTC`) para evitar desfasajes entre el servidor (UTC) y la base de datos. Esto es especialmente importante para filtros por mes en zonas horarias como Argentina (UTC-3).

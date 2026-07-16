@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useTransition } from "react";
 import { useDateStore } from "@/store/useDateStore";
+import { useRole } from "@/lib/role-context";
 import {
   getTechnicalServices,
   addTechnicalService,
@@ -129,11 +130,13 @@ function RecordCard({
   total,
   onEdit,
   onDelete,
+  isViewer,
 }: {
   record: TechnicalServiceRecord;
   total: number;
   onEdit: () => void;
   onDelete: () => void;
+  isViewer: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -196,6 +199,7 @@ function RecordCard({
       )}
 
       {/* Actions */}
+      {!isViewer && (
       <div className="flex items-center gap-2 pt-1 border-t border-slate-800">
         <button
           onClick={onEdit}
@@ -213,6 +217,7 @@ function RecordCard({
           Eliminar
         </button>
       </div>
+      )}
     </div>
   );
 }
@@ -220,6 +225,7 @@ function RecordCard({
 // ─── Main page ────────────────────────────────────────────────────────────────
 export default function ServicioTecnicoPage() {
   const { month, year } = useDateStore();
+  const { role } = useRole();
   const [isPending, startTransition] = useTransition();
   const [records, setRecords] = useState<TechnicalServiceRecord[]>([]);
   const [isAdding, setIsAdding] = useState(false);
@@ -412,18 +418,20 @@ export default function ServicioTecnicoPage() {
           </div>
         </div>
 
-        {/* Mobile: collapsible form toggle */}
-        <button
-          type="button"
-          onClick={() => setShowForm((v) => !v)}
-          className="lg:hidden w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-medium py-2.5 px-4 rounded-xl transition-colors text-sm"
-        >
-          {showForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-          {showForm ? "Cancelar" : "Nuevo Registro"}
-        </button>
+        {role === "ADMIN" && (
+          <button
+            type="button"
+            onClick={() => setShowForm((v) => !v)}
+            className="lg:hidden w-full flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-medium py-2.5 px-4 rounded-xl transition-colors text-sm"
+          >
+            {showForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+            {showForm ? "Cancelar" : "Nuevo Registro"}
+          </button>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
           {/* ── CREATE FORM ── */}
+          {role === "ADMIN" && (
           <div
             className={`bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm h-fit ${
               showForm ? "block" : "hidden lg:block"
@@ -512,6 +520,7 @@ export default function ServicioTecnicoPage() {
               </button>
             </form>
           </div>
+          )}
 
           {/* ── RECORDS LIST ── */}
           <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm">
@@ -538,6 +547,7 @@ export default function ServicioTecnicoPage() {
                     total={calculateRecordTotal(record.services)}
                     onEdit={() => openEditModal(record)}
                     onDelete={() => handleDelete(record.id)}
+                    isViewer={role !== "ADMIN"}
                   />
                 ))
               )}
@@ -552,13 +562,13 @@ export default function ServicioTecnicoPage() {
                     <th className="px-4 py-3 font-medium">Equipo / Sucursal</th>
                     <th className="px-4 py-3 font-medium">Servicios</th>
                     <th className="px-4 py-3 font-medium text-right">Comisión</th>
-                    <th className="px-4 py-3" />
+                    {role === "ADMIN" && <th className="px-4 py-3" />}
                   </tr>
                 </thead>
                 <tbody>
                   {records.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-4 py-8 text-center text-slate-500">
+                      <td colSpan={role !== "ADMIN" ? 4 : 5} className="px-4 py-8 text-center text-slate-500">
                         No hay registros para este mes.
                       </td>
                     </tr>
@@ -599,6 +609,7 @@ export default function ServicioTecnicoPage() {
                           <td className="px-4 py-3 font-medium text-blue-400 text-right tabular-nums">
                             {formatARS.format(recordTotal)}
                           </td>
+      {role === "ADMIN" && (
                           <td className="px-4 py-3">
                             <div className="flex items-center justify-end gap-1">
                               <button
@@ -617,6 +628,7 @@ export default function ServicioTecnicoPage() {
                               </button>
                             </div>
                           </td>
+                          )}
                         </tr>
                       );
                     })

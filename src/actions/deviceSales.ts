@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { requireAdmin } from "@/lib/auth";
 
 export async function getDeviceSales(month: number, year: number) {
   try {
@@ -21,6 +22,7 @@ export async function upsertDeviceSales(
   data: { totalQuantity: number; totalVolume: number }
 ) {
   try {
+    await requireAdmin();
     const record = await prisma.deviceSalesMonthly.upsert({
       where: { month_year: { month, year } },
       update: { totalQuantity: data.totalQuantity, totalVolume: data.totalVolume },

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useTransition } from "react";
 import { useDateStore } from "@/store/useDateStore";
+import { useRole } from "@/lib/role-context";
 import { getDevicePurchases, addDevicePurchase, deleteDevicePurchase, updateDevicePurchase } from "@/actions/devicePurchase";
 import {
   IPHONE_MODELS,
@@ -68,6 +69,7 @@ function CommissionScale({ count }: { count: number }) {
 
 export default function ComprasPage() {
   const { month, year } = useDateStore();
+  const { role } = useRole();
   const [isPending, startTransition] = useTransition();
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [isAdding, setIsAdding] = useState(false);
@@ -210,6 +212,7 @@ export default function ComprasPage() {
       </div>
 
       {/* Mobile toggle */}
+      {role === "ADMIN" && (
       <button
         type="button"
         onClick={() => setShowForm((v) => !v)}
@@ -217,9 +220,11 @@ export default function ComprasPage() {
       >
         {showForm ? "Cancelar" : <><Plus className="h-4 w-4" /> Nueva Compra</>}
       </button>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
         {/* Form */}
+        {role === "ADMIN" && (
         <div className={`bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm h-fit ${
           showForm ? "block" : "hidden lg:block"
         }`}>
@@ -292,6 +297,7 @@ export default function ComprasPage() {
             </button>
           </form>
         </div>
+        )}
 
         {/* Records */}
         <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm">
@@ -328,6 +334,7 @@ export default function ComprasPage() {
                           </span>
                         </div>
                       </div>
+                      {role === "ADMIN" && (
                       <div className="flex flex-col gap-1 shrink-0">
                         <button
                           onClick={() => openEditModal(p)}
@@ -342,6 +349,7 @@ export default function ComprasPage() {
                           <Trash2 className="h-4 w-4" />
                         </button>
                       </div>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -357,7 +365,7 @@ export default function ComprasPage() {
                       <th className="px-4 py-3 font-medium">Modelo</th>
                       <th className="px-4 py-3 font-medium">Capacidad</th>
                       <th className="px-4 py-3 font-medium">Fecha</th>
-                      <th className="px-4 py-3" />
+                      {role === "ADMIN" && <th className="px-4 py-3" />}
                     </tr>
                   </thead>
                   <tbody>
@@ -374,6 +382,7 @@ export default function ComprasPage() {
                         <td className="px-4 py-3 text-xs">
                           {new Date(p.date).toLocaleDateString("es-AR", { timeZone: "UTC" })}
                         </td>
+                        {role === "ADMIN" && (
                         <td className="px-4 py-3">
                           <div className="flex items-center justify-end gap-1">
                             <button
@@ -390,6 +399,7 @@ export default function ComprasPage() {
                             </button>
                           </div>
                         </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>

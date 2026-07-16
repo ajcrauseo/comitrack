@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useTransition } from "react";
 import { useDateStore } from "@/store/useDateStore";
+import { useRole } from "@/lib/role-context";
 import { getDeviceSales, upsertDeviceSales } from "@/actions/deviceSales";
 import { calcDeviceSalesCommission, deviceSalesRateLabels } from "@/lib/constants";
 import { formatARS } from "@/lib/utils";
@@ -9,6 +10,7 @@ import { Smartphone, Save, Loader2, Info } from "lucide-react";
 
 export default function VentasEquiposPage() {
   const { month, year } = useDateStore();
+  const { role } = useRole();
   const [isPending, startTransition] = useTransition();
   const [isSaving, setIsSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
@@ -82,8 +84,9 @@ export default function VentasEquiposPage() {
         {isPending && <Loader2 className="h-5 w-5 text-orange-400 animate-spin" />}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6">
+      <div className={`grid grid-cols-1 ${role === "ADMIN" ? "lg:grid-cols-2" : ""} gap-5 sm:gap-6`}>
         {/* Form */}
+        {role === "ADMIN" && (
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-white mb-1">Registro Mensual</h2>
           <p className="text-xs text-slate-500 mb-5">
@@ -107,7 +110,7 @@ export default function VentasEquiposPage() {
                 min="0"
                 value={totalQuantity}
                 onChange={(e) => setTotalQuantity(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="Ej: 5"
               />
             </div>
@@ -122,21 +125,22 @@ export default function VentasEquiposPage() {
                 step="0.01"
                 value={totalVolume}
                 onChange={(e) => setTotalVolume(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm"
+                className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="Ej: 3500000"
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={isSaving}
-              className="w-full bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white font-medium py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
-            >
-              {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-              Guardar Registro
-            </button>
+              <button
+                type="submit"
+                disabled={isSaving}
+                className="w-full bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white font-medium py-2.5 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
+              >
+                {isSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+                Guardar Registro
+              </button>
           </form>
         </div>
+        )}
 
         {/* Commission breakdown */}
         <div className="space-y-4">

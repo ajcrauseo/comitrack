@@ -8,53 +8,14 @@ datasource db {
 }
 
 // ==========================================
-// 2. SERVICIO TÉCNICO
+// ENUMS
 // ==========================================
-model TechnicalService {
-  id        String   @id @default(uuid())
-  coders    String   @unique // ID único de reparación
-  date      DateTime // Fecha exacta del registro
-  model     String
-  branch    String
-  
-  // Relación 1 a N con los servicios realizados a este equipo
-  services  ServiceItem[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model ServiceItem {
-  id                 String           @id @default(uuid())
-  technicalServiceId String
-  technicalService   TechnicalService @relation(fields: [technicalServiceId], references: [id], onDelete: Cascade)
-  
-  serviceType        ServiceCategory
-  sku                String?          // Código de producto (SKU) del servicio
-  
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-}
 
 enum ServiceCategory {
   MODULO_BATERIA_PIN_O_MAYOR_20K // $1.500
   REVISION_APROBADA              // $2.000
   LIMPIEZA_O_MENOR_20K           // $650
   DENEGADA_SIN_REPARACION        // $0
-}
-
-// ==========================================
-// 3. COMPRAS DE CELULARES / DISPOSITIVOS
-// ==========================================
-model DevicePurchase {
-  id            String   @id @default(uuid())
-  purchaseOrder String   @unique 
-  date          DateTime 
-  model         String   // Ej: "iPhone 13 Pro"
-  capacity      Capacity
-  
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
 }
 
 enum Capacity {
@@ -65,15 +26,76 @@ enum Capacity {
   TB_2
 }
 
+enum TargetAchievement {
+  LESS_THAN_100     // < 100% (1%)
+  EXACTLY_100       // 100% (1.4%)
+  EXACTLY_110       // 110% (1.6%)
+  GREATER_EQUAL_125 // >= 125% (1.8%)
+}
+
 // ==========================================
-// 4. VENTAS DE CELULARES (Registro Mensual)
+// 1. SERVICIO TÉCNICO
 // ==========================================
+
+model TechnicalService {
+  id      String   @id @default(uuid())
+  coders  String   @unique
+  date    DateTime
+  model   String
+  branch  String
+
+  userId   String?
+  user     User?    @relation(fields: [userId], references: [id])
+
+  services ServiceItem[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ServiceItem {
+  id                 String           @id @default(uuid())
+  technicalServiceId String
+  technicalService   TechnicalService @relation(fields: [technicalServiceId], references: [id], onDelete: Cascade)
+
+  serviceType        ServiceCategory
+  sku                String?
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+// ==========================================
+// 2. COMPRAS DE CELULARES
+// ==========================================
+
+model DevicePurchase {
+  id            String   @id @default(uuid())
+  purchaseOrder String   @unique
+  date          DateTime
+  model         String
+  capacity      Capacity
+
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id])
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+// ==========================================
+// 3. VENTAS DE CELULARES (Registro Mensual)
+// ==========================================
+
 model DeviceSalesMonthly {
   id            String   @id @default(uuid())
-  month         Int      // 1-12
+  month         Int
   year          Int
-  totalQuantity Int      // Cantidad total de equipos
-  totalVolume   Float    // Monto total en pesos
+  totalQuantity Int
+  totalVolume   Float
+
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id])
 
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -82,14 +104,18 @@ model DeviceSalesMonthly {
 }
 
 // ==========================================
-// 5. VENTAS GENERALES (Registro Mensual)
+// 4. VENTAS GENERALES (Registro Mensual)
 // ==========================================
+
 model GeneralSalesMonthly {
   id               String            @id @default(uuid())
   month            Int
   year             Int
-  grossSalesVolume Float             // Volumen bruto
-  target           TargetAchievement // Objetivo alcanzado
+  grossSalesVolume Float
+  target           TargetAchievement
+
+  userId           String?
+  user             User?    @relation(fields: [userId], references: [id])
 
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
@@ -97,9 +123,20 @@ model GeneralSalesMonthly {
   @@unique([month, year])
 }
 
-enum TargetAchievement {
-  LESS_THAN_100     // < 100% (1%)
-  EXACTLY_100       // 100% (1.4%)
-  EXACTLY_110       // 110% (1.6%)
-  GREATER_EQUAL_125 // >= 125% (1.8%)
+// ==========================================
+// 5. USUARIOS (Autenticación y Roles)
+// ==========================================
+
+model User {
+  id            String   @id @default(uuid())
+  username      String   @unique
+  adminPassword String
+  viewerPin     String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  technicalServices   TechnicalService[]
+  devicePurchases     DevicePurchase[]
+  deviceSalesMonthly  DeviceSalesMonthly[]
+  generalSalesMonthly GeneralSalesMonthly[]
 }
