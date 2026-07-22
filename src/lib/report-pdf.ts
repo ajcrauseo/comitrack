@@ -55,17 +55,17 @@ type ExportData = {
   };
 };
 
-const COLORS = {
-  primary: [55, 48, 163] as const, // indigo
-  accent: [139, 92, 246] as const, // violet
-  dark: [15, 23, 42] as const, // slate-900
-  muted: [100, 116, 139] as const, // slate-500
-  white: [255, 255, 255] as const,
-  lightBg: [248, 250, 252] as const,
-  green: [22, 163, 74] as const,
-  orange: [234, 88, 12] as const,
-  purple: [147, 51, 234] as const,
-  red: [220, 38, 38] as const,
+const COLORS: Record<string, [number, number, number]> = {
+  primary: [55, 48, 163], // indigo
+  accent: [139, 92, 246], // violet
+  dark: [15, 23, 42], // slate-900
+  muted: [100, 116, 139], // slate-500
+  white: [255, 255, 255],
+  lightBg: [248, 250, 252],
+  green: [22, 163, 74],
+  orange: [234, 88, 12],
+  purple: [147, 51, 234],
+  red: [220, 38, 38],
 };
 
 function formatARS(value: number): string {
@@ -99,7 +99,7 @@ export function generateReportPdf(data: ExportData) {
   }
 
   // ── Helper: section title ──
-  function sectionTitle(text: string, color: readonly [number, number, number]) {
+  function sectionTitle(text: string, color: [number, number, number]) {
     ensureSpace(20);
     y += 4;
     const [cr, cg, cb] = color;
