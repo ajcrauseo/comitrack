@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { CapacityKey } from "@/lib/constants";
+import { parseUTCDate } from "@/lib/utils";
 import { requireAdmin } from "@/lib/auth";
 
 export async function getDevicePurchases(month: number, year: number) {
@@ -39,7 +40,7 @@ export async function addDevicePurchase(data: {
     const purchase = await prisma.devicePurchase.create({
       data: {
         purchaseOrder: data.purchaseOrder,
-        date: new Date(data.date),
+        date: parseUTCDate(data.date),
         model: data.model,
         capacity: data.capacity,
       },
@@ -50,7 +51,10 @@ export async function addDevicePurchase(data: {
     return { success: true, data: purchase };
   } catch (error) {
     console.error("Error adding device purchase:", error);
-    return { success: false, error: "Error al guardar la compra." };
+    const message = error instanceof Error && (error.message.includes("No autenticado") || error.message.includes("restringida"))
+      ? "Tu sesión expiró. Iniciá sesión de nuevo."
+      : "Error al guardar la compra.";
+    return { success: false, error: message };
   }
 }
 
@@ -63,7 +67,10 @@ export async function deleteDevicePurchase(id: string) {
     return { success: true };
   } catch (error) {
     console.error("Error deleting device purchase:", error);
-    return { success: false, error: "Error al eliminar la compra." };
+    const message = error instanceof Error && (error.message.includes("No autenticado") || error.message.includes("restringida"))
+      ? "Tu sesión expiró. Iniciá sesión de nuevo."
+      : "Error al eliminar la compra.";
+    return { success: false, error: message };
   }
 }
 
@@ -90,7 +97,7 @@ export async function updateDevicePurchase(
       where: { id },
       data: {
         purchaseOrder: data.purchaseOrder,
-        date: new Date(data.date),
+        date: parseUTCDate(data.date),
         model: data.model,
         capacity: data.capacity,
       },
@@ -101,6 +108,9 @@ export async function updateDevicePurchase(
     return { success: true, data: updated };
   } catch (error) {
     console.error("Error updating device purchase:", error);
-    return { success: false, error: "Error al actualizar la compra." };
+    const message = error instanceof Error && (error.message.includes("No autenticado") || error.message.includes("restringida"))
+      ? "Tu sesión expiró. Iniciá sesión de nuevo."
+      : "Error al actualizar la compra.";
+    return { success: false, error: message };
   }
 }

@@ -10,3 +10,8 @@ export const formatARS = new Intl.NumberFormat("es-AR", {
   currency: "ARS",
   minimumFractionDigits: 0,
 });
+
+export function parseUTCDate(dateStr: string): Date {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d));
+}

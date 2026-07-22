@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { ServiceCategory } from "@/lib/constants";
+import { parseUTCDate } from "@/lib/utils";
 import { requireAdmin } from "@/lib/auth";
 
 export async function getTechnicalServices(month: number, year: number) {
@@ -46,7 +47,7 @@ export async function addTechnicalService(data: {
     const newService = await prisma.technicalService.create({
       data: {
         coders: data.coders,
-        date: new Date(data.date),
+        date: parseUTCDate(data.date),
         model: data.model,
         branch: data.branch,
         services: {
@@ -64,7 +65,10 @@ export async function addTechnicalService(data: {
     return { success: true, data: newService };
   } catch (error) {
     console.error("Error adding technical service:", error);
-    return { success: false, error: "Error al guardar el registro." };
+    const message = error instanceof Error && (error.message.includes("No autenticado") || error.message.includes("restringida"))
+      ? "Tu sesión expiró. Iniciá sesión de nuevo."
+      : "Error al guardar el registro.";
+    return { success: false, error: message };
   }
 }
 
@@ -94,7 +98,7 @@ export async function updateTechnicalService(
       where: { id },
       data: {
         coders: data.coders,
-        date: new Date(data.date),
+        date: parseUTCDate(data.date),
         model: data.model,
         branch: data.branch,
         services: {
@@ -113,7 +117,10 @@ export async function updateTechnicalService(
     return { success: true, data: updated };
   } catch (error) {
     console.error("Error updating technical service:", error);
-    return { success: false, error: "Error al actualizar el registro." };
+    const message = error instanceof Error && (error.message.includes("No autenticado") || error.message.includes("restringida"))
+      ? "Tu sesión expiró. Iniciá sesión de nuevo."
+      : "Error al actualizar el registro.";
+    return { success: false, error: message };
   }
 }
 
@@ -128,6 +135,9 @@ export async function deleteTechnicalService(id: string) {
     return { success: true };
   } catch (error) {
     console.error("Error deleting technical service:", error);
-    return { success: false, error: "Error al eliminar el registro." };
+    const message = error instanceof Error && (error.message.includes("No autenticado") || error.message.includes("restringida"))
+      ? "Tu sesión expiró. Iniciá sesión de nuevo."
+      : "Error al eliminar el registro.";
+    return { success: false, error: message };
   }
 }

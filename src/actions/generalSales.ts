@@ -52,6 +52,9 @@ export async function upsertGeneralSales(
     return { success: true, data: record };
   } catch (error) {
     console.error("Error upserting general sales:", error);
-    return { success: false, error: "Error al guardar las ventas generales." };
+    const message = error instanceof Error && (error.message.includes("No autenticado") || error.message.includes("restringida"))
+      ? "Tu sesión expiró. Iniciá sesión de nuevo."
+      : "Error al guardar las ventas generales.";
+    return { success: false, error: message };
   }
 }
