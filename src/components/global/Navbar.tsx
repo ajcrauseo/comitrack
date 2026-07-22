@@ -51,6 +51,10 @@ export function Navbar() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
+  useEffect(() => {
+    useDateStore.persist.rehydrate();
+  }, []);
+
   useEffect(() => { setMenuOpen(false); }, [pathname]);
 
   useEffect(() => {

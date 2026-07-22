@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { verifyPassword, hashPassword, setSessionCookie, clearSessionCookie, validatePin, getSession } from "@/lib/auth";
+import { checkRateLimit, recordFailedAttempt, resetAttempts } from "@/lib/rate-limit";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
@@ -13,16 +14,25 @@ export async function loginAdmin(formData: FormData) {
     return { success: false, error: "Usuario y contraseña son requeridos" };
   }
 
+  const { allowed, retryAfterMs } = checkRateLimit(`login:${username}`);
+  if (!allowed) {
+    const minutes = Math.ceil(retryAfterMs / 60000);
+    return { success: false, error: `Demasiados intentos. Probá de nuevo en ${minutes} minuto${minutes > 1 ? "s" : ""}.` };
+  }
+
   const user = await prisma.user.findUnique({ where: { username } });
   if (!user) {
+    recordFailedAttempt(`login:${username}`);
     return { success: false, error: "Credenciales inválidas" };
   }
 
   const valid = await verifyPassword(password, user.adminPassword);
   if (!valid) {
+    recordFailedAttempt(`login:${username}`);
     return { success: false, error: "Credenciales inválidas" };
   }
 
+  resetAttempts(`login:${username}`);
   await setSessionCookie({ userId: user.id, role: "ADMIN" });
   revalidatePath("/", "layout");
   redirect("/");
@@ -40,16 +50,25 @@ export async function loginViewer(formData: FormData) {
     return { success: false, error: "El PIN debe tener exactamente 4 dígitos numéricos" };
   }
 
+  const { allowed, retryAfterMs } = checkRateLimit(`login:${username}`);
+  if (!allowed) {
+    const minutes = Math.ceil(retryAfterMs / 60000);
+    return { success: false, error: `Demasiados intentos. Probá de nuevo en ${minutes} minuto${minutes > 1 ? "s" : ""}.` };
+  }
+
   const user = await prisma.user.findUnique({ where: { username } });
   if (!user) {
+    recordFailedAttempt(`login:${username}`);
     return { success: false, error: "Credenciales inválidas" };
   }
 
   const valid = await verifyPassword(pin, user.viewerPin);
   if (!valid) {
+    recordFailedAttempt(`login:${username}`);
     return { success: false, error: "Credenciales inválidas" };
   }
 
+  resetAttempts(`login:${username}`);
   await setSessionCookie({ userId: user.id, role: "VIEWER" });
   revalidatePath("/", "layout");
   redirect("/");

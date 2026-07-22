@@ -1,5 +1,10 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { FileQuestion, Home } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "404 | ComiTrack",
+};
 
 export default function NotFound() {
   return (
