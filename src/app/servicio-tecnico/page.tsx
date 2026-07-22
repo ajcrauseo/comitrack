@@ -22,8 +22,10 @@ import {
   CalendarDays,
   ChevronDown,
   ChevronUp,
+  Search,
 } from "lucide-react";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { BorderBeam } from "border-beam";
 
 type TechnicalServiceRecord = {
   id: string;
@@ -59,20 +61,23 @@ function ServiceList({
         Añadir Servicio
       </label>
       <div className="flex gap-2">
-        <select
-          id={selectId}
-          className="flex-1 min-w-0 bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-          defaultValue=""
-        >
-          <option value="" disabled>
-            Selecciona un servicio...
-          </option>
-          {(Object.keys(serviceLabels) as ServiceCategory[]).map((key) => (
-            <option key={key} value={key}>
-              {serviceLabels[key]}
+        <div className="relative flex-1 min-w-0">
+          <select
+            id={selectId}
+            className="w-full appearance-none bg-slate-950 border border-slate-800 rounded-lg py-2 pl-3 pr-10 text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            defaultValue=""
+          >
+            <option value="" disabled>
+              Selecciona un servicio...
             </option>
-          ))}
-        </select>
+            {(Object.keys(serviceLabels) as ServiceCategory[]).map((key) => (
+              <option key={key} value={key}>
+                {serviceLabels[key]}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 pointer-events-none" />
+        </div>
         <button
           type="button"
           onClick={() => {
@@ -249,6 +254,9 @@ export default function ServicioTecnicoPage() {
   const [editError, setEditError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
+  // ── Search ──
+  const [searchQuery, setSearchQuery] = useState("");
+
   const loadRecords = () => {
     startTransition(() => {
       getTechnicalServices(month, year).then((res) => {
@@ -260,6 +268,22 @@ export default function ServicioTecnicoPage() {
   useEffect(() => {
     loadRecords();
   }, [month, year]);
+
+  const query = searchQuery.toLowerCase();
+  const filteredRecords = query
+    ? records.filter(
+        (r) =>
+          r.coders.toLowerCase().includes(query) ||
+          r.model.toLowerCase().includes(query)
+      )
+    : records;
+
+  const categorySummary = records.reduce<Record<string, number>>((acc, r) => {
+    for (const s of r.services) {
+      acc[s.serviceType] = (acc[s.serviceType] || 0) + 1;
+    }
+    return acc;
+  }, {});
 
   // ── Create handlers ──
   const handleAddService = (category: ServiceCategory) =>
@@ -533,14 +557,56 @@ export default function ServicioTecnicoPage() {
               )}
             </div>
 
+            {/* Category summary */}
+            {Object.keys(categorySummary).length > 0 && (
+              <div className="flex flex-wrap gap-2 mb-4">
+                {(Object.entries(categorySummary) as [string, number][])
+                  .sort(([, a], [, b]) => b - a)
+                  .map(([type, count]) => (
+                    <span
+                      key={type}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[11px] rounded-full border border-slate-700 bg-slate-800/50 text-slate-300"
+                    >
+                      <span className="font-mono text-blue-400">{count}</span>
+                      <span>{serviceLabels[type as ServiceCategory] || type}</span>
+                    </span>
+                  ))}
+              </div>
+            )}
+
+            {/* Search input */}
+            <div className="mb-4">
+            <BorderBeam size="sm" colorVariant="colorful" duration={4}>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 pointer-events-none" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Buscar por coders o modelo..."
+                  className="w-full pl-9 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-lg text-slate-200 text-sm placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            </BorderBeam>
+            </div>
+
             {/* Mobile: cards view */}
             <div className="lg:hidden space-y-3">
-              {records.length === 0 ? (
+              {filteredRecords.length === 0 ? (
                 <p className="text-center text-slate-500 text-sm py-8">
-                  No hay registros para este mes.
+                  {searchQuery ? "No hay resultados para la búsqueda." : "No hay registros para este mes."}
                 </p>
               ) : (
-                records.map((record) => (
+                filteredRecords.map((record) => (
                   <RecordCard
                     key={record.id}
                     record={record}
@@ -566,14 +632,14 @@ export default function ServicioTecnicoPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {records.length === 0 ? (
+                  {filteredRecords.length === 0 ? (
                     <tr>
                       <td colSpan={role !== "ADMIN" ? 4 : 5} className="px-4 py-8 text-center text-slate-500">
-                        No hay registros para este mes.
+                        {searchQuery ? "No hay resultados para la búsqueda." : "No hay registros para este mes."}
                       </td>
                     </tr>
                   ) : (
-                    records.map((record) => {
+                    filteredRecords.map((record) => {
                       const recordTotal = calculateRecordTotal(record.services);
                       return (
                         <tr

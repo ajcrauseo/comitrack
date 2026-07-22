@@ -14,7 +14,7 @@ export async function getTechnicalServices(month: number, year: number) {
     const services = await prisma.technicalService.findMany({
       where: { date: { gte: startDate, lte: endDate } },
       include: { services: true },
-      orderBy: { date: "asc" },
+      orderBy: { date: "desc" },
     });
 
     return { success: true, data: services };
