@@ -125,6 +125,10 @@ comitrack/
 │       └── useDateStore.ts  # Zustand: { month, year, setMonth, setYear }
 ```
 
+## Reglas del Agente
+
+- **Nunca hacer commits sin que el usuario lo pida explícitamente.**
+
 ## Convenciones de Código
 
 ### Server Actions
