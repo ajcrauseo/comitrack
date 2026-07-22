@@ -40,4 +40,10 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# generated
 /src/generated/prisma
+
+# AI tool configs (personal)
+.agents/
+.claude/
+skills-lock.json
