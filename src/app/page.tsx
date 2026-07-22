@@ -3,6 +3,7 @@
 import { useEffect, useState, useTransition } from "react";
 import { useDateStore } from "@/store/useDateStore";
 import { getDashboardSummary } from "@/actions/dashboard";
+import { getExportData } from "@/actions/export";
 import { formatARS } from "@/lib/utils";
 import {
   Wrench,
@@ -11,6 +12,7 @@ import {
   TrendingUp,
   DollarSign,
   Loader2,
+  FileDown,
 } from "lucide-react";
 
 type DashboardData = {
@@ -59,6 +61,7 @@ const cards = [
 export default function DashboardPage() {
   const { month, year } = useDateStore();
   const [isPending, startTransition] = useTransition();
+  const [isExporting, setIsExporting] = useState(false);
   const [data, setData] = useState<DashboardData>({
     techServiceTotal: 0,
     purchasesTotal: 0,
@@ -77,22 +80,55 @@ export default function DashboardPage() {
     });
   }, [month, year]);
 
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const res = await getExportData(month, year);
+      if (res.success && res.data) {
+        const { generateReportPdf } = await import("@/lib/report-pdf");
+        generateReportPdf(res.data);
+      } else {
+        alert(res.error || "Error al generar el reporte.");
+      }
+    } catch {
+      alert("Error al generar el reporte.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   return (
     <div className="space-y-5 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight leading-tight">
           Dashboard de{" "}
           <span className="bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
             Comisiones
           </span>
         </h1>
-        {isPending && (
-          <div className="flex items-center text-indigo-400 gap-1.5 text-xs sm:text-sm font-medium shrink-0">
-            <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
-            <span className="hidden sm:inline">Actualizando...</span>
-          </div>
-        )}
+        <div className="flex items-center gap-3 shrink-0">
+          {isPending && (
+            <div className="flex items-center text-indigo-400 gap-1.5 text-xs sm:text-sm font-medium">
+              <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
+              <span className="hidden sm:inline">Actualizando...</span>
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={isExporting}
+            className="flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-slate-300 hover:text-white font-medium py-2 px-3 sm:px-4 rounded-lg transition-colors text-sm border border-slate-700"
+          >
+            {isExporting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <FileDown className="h-4 w-4" />
+            )}
+            <span className="hidden sm:inline">Exportar PDF</span>
+            <span className="sm:hidden">PDF</span>
+          </button>
+        </div>
       </div>
 
       {/* Cards grid: 2 cols on mobile, 4 on lg */}
