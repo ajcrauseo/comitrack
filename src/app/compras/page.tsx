@@ -26,10 +26,10 @@ const CAPACITIES = Object.entries(capacityLabels) as [CapacityKey, string][];
 
 function CommissionScale({ count }: { count: number }) {
   const tiers = [
-    { label: "1 equipo", perUnit: 2000, total: 2000, min: 1, max: 1 },
-    { label: "2 equipos", perUnit: 2500, total: 5000, min: 2, max: 2 },
-    { label: "3 equipos", perUnit: 3500, total: 10500, min: 3, max: 3 },
-    { label: "4+ equipos", perUnit: 4500, total: null, min: 4, max: Infinity },
+    { label: "1 equipo", perUnit: 5800, total: 5800, min: 1, max: 1 },
+    { label: "2 equipos", perUnit: 6400, total: 12800, min: 2, max: 2 },
+    { label: "3 equipos", perUnit: 6900, total: 20700, min: 3, max: 3 },
+    { label: "4+ equipos", perUnit: 7300, total: null, min: 4, max: Infinity },
   ];
 
   return (

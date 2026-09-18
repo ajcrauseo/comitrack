@@ -93,38 +93,38 @@ describe("calcPurchaseCommission", () => {
     expect(calcPurchaseCommission(0)).toEqual({ perUnit: 0, total: 0 });
   });
 
-  it("returns $2000/unit for 1 purchase", () => {
-    expect(calcPurchaseCommission(1)).toEqual({ perUnit: 2000, total: 2000 });
+  it("returns $5800/unit for 1 purchase", () => {
+    expect(calcPurchaseCommission(1)).toEqual({ perUnit: 5800, total: 5800 });
   });
 
-  it("returns $2500/unit for 2 purchases", () => {
-    expect(calcPurchaseCommission(2)).toEqual({ perUnit: 2500, total: 5000 });
+  it("returns $6400/unit for 2 purchases", () => {
+    expect(calcPurchaseCommission(2)).toEqual({ perUnit: 6400, total: 12800 });
   });
 
-  it("returns $3500/unit for 3 purchases", () => {
-    expect(calcPurchaseCommission(3)).toEqual({ perUnit: 3500, total: 10500 });
+  it("returns $6900/unit for 3 purchases", () => {
+    expect(calcPurchaseCommission(3)).toEqual({ perUnit: 6900, total: 20700 });
   });
 
-  it("returns $4500/unit for 4 purchases", () => {
-    expect(calcPurchaseCommission(4)).toEqual({ perUnit: 4500, total: 18000 });
+  it("returns $7300/unit for 4 purchases", () => {
+    expect(calcPurchaseCommission(4)).toEqual({ perUnit: 7300, total: 29200 });
   });
 
-  it("returns $4500/unit for 5 purchases", () => {
-    expect(calcPurchaseCommission(5)).toEqual({ perUnit: 4500, total: 22500 });
+  it("returns $7300/unit for 5 purchases", () => {
+    expect(calcPurchaseCommission(5)).toEqual({ perUnit: 7300, total: 36500 });
   });
 
-  it("returns $4500/unit for 10 purchases", () => {
-    expect(calcPurchaseCommission(10)).toEqual({ perUnit: 4500, total: 45000 });
+  it("returns $7300/unit for 10 purchases", () => {
+    expect(calcPurchaseCommission(10)).toEqual({ perUnit: 7300, total: 73000 });
   });
 
-  it("returns $4500/unit for large quantities", () => {
-    expect(calcPurchaseCommission(100)).toEqual({ perUnit: 4500, total: 450000 });
+  it("returns $7300/unit for large quantities", () => {
+    expect(calcPurchaseCommission(100)).toEqual({ perUnit: 7300, total: 730000 });
   });
 
   it("handles negative count gracefully", () => {
     const result = calcPurchaseCommission(-1);
-    expect(result.perUnit).toBe(4500);
-    expect(result.total).toBe(-4500);
+    expect(result.perUnit).toBe(7300);
+    expect(result.total).toBe(-7300);
   });
 });
 
