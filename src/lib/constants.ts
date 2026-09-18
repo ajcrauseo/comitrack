@@ -60,10 +60,10 @@ export function calcPurchaseCommission(count: number): {
   total: number;
 } {
   if (count === 0) return { perUnit: 0, total: 0 };
-  if (count === 1) return { perUnit: 2000, total: 2000 };
-  if (count === 2) return { perUnit: 2500, total: 5000 };
-  if (count === 3) return { perUnit: 3500, total: 10500 };
-  return { perUnit: 4500, total: 4500 * count };
+  if (count === 1) return { perUnit: 5800, total: 5800 };
+  if (count === 2) return { perUnit: 6400, total: 12800 };
+  if (count === 3) return { perUnit: 6900, total: 20700 };
+  return { perUnit: 7300, total: 7300 * count };
 }
 
 // ─── Ventas de Equipos ────────────────────────────────────────────────────────
