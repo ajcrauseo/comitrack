@@ -77,11 +77,19 @@ Enums: `ServiceCategory` (4 tipos), `Capacity` (5 tamaños), `TargetAchievement`
 Todas las funciones puras están en `src/lib/constants.ts`:
 
 - `techRates` — Mapa ServiceCategory → monto fijo ($0, $650, $1500, $2000)
-- `calcPurchaseCommission(count)` — Escalonada por cantidad en el mes (1=$2000, 2=$2500/u, 3=$3500/u, 4+=$4500/u)
+- `calcPurchaseCommission(count)` — Escalonada por cantidad en el mes, monto por equipo (1=$5800, 2=$6400/u, 3=$6900/u, 4+=$7300/u)
 - `calcDeviceSalesCommission(quantity, volume)` — Porcentaje sobre volumen según cantidad (0.5% a 1.6%)
 - `calcGeneralSalesCommission(grossVolume, deviceVolume, target)` — Base = bruto - volumen equipos, × tasa objetivo (1% a 1.8%)
 
-**⚠️ DUPLICACIÓN:** `src/actions/dashboard.ts` redefine estas funciones inline en vez de importarlas de `constants.ts`. Si cambian las tasas, hay que actualizar DOS lugares.
+`src/actions/dashboard.ts` importa estas funciones de `constants.ts` (fuente única de tasas).
+
+### Cambios de escalas desde noviembre 2026 (en curso)
+
+Backlog: `.claude/plans/modificaciones de escalas comisionales.md`. Los meses anteriores a nov/2026 conservan las reglas viejas (dashboard y PDF).
+
+- **Objetivos mensuales de unidades** (en Ventas Generales): 3 niveles (mínimo, objetivo, muy bueno) + unidades vendidas de la empresa, cargados a mano por mes y editables por ADMIN; el VIEWER los ve en solo lectura. Un objetivo se alcanza cuando unidades ≥ objetivo.
+- **Servicio Técnico:** solo cambia `MODULO_BATERIA_PIN_O_MAYOR_20K`: $1500 (bajo el mínimo o al alcanzar el mínimo) / $2500 (objetivo) / $3500 (muy bueno). Si faltan objetivos o unidades del mes, se paga $1500 y se muestra un aviso. Las demás categorías no cambian.
+- **Compras de equipos:** nueva escala por equipo: 1=$5000, 2=$5800/u, 3=$6400/u, 4=$6900/u, 5+=$7300/u.
 
 ## Estructura de Directorios
 
