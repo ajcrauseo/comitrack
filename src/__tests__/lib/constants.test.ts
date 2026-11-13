@@ -244,4 +244,30 @@ describe("calcAchievedLevel", () => {
   it("returns BELOW_MINIMUM when units are under the minimum", () => {
     expect(calcAchievedLevel(99, goals)).toBe("BELOW_MINIMUM");
   });
+
+  it("returns MINIMUM when units equal the minimum exactly", () => {
+    expect(calcAchievedLevel(100, goals)).toBe("MINIMUM");
+  });
+
+  it("returns TARGET when units equal the target exactly", () => {
+    expect(calcAchievedLevel(150, goals)).toBe("TARGET");
+  });
+
+  it("returns VERY_GOOD when units equal the very good goal exactly", () => {
+    expect(calcAchievedLevel(200, goals)).toBe("VERY_GOOD");
+  });
+
+  it("returns the lower level when units fall between two goals", () => {
+    expect(calcAchievedLevel(149, goals)).toBe("MINIMUM");
+    expect(calcAchievedLevel(199, goals)).toBe("TARGET");
+  });
+
+  it.each([
+    ["units", null, goals],
+    ["minimum", 120, { ...goals, minimum: null }],
+    ["target", 120, { ...goals, target: null }],
+    ["veryGood", 120, { ...goals, veryGood: null }],
+  ])("returns null when %s is missing", (_name, units, g) => {
+    expect(calcAchievedLevel(units, g)).toBeNull();
+  });
 });

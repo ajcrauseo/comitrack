@@ -124,8 +124,19 @@ export function calcGeneralSalesCommission(
 export type AchievedLevel = "BELOW_MINIMUM" | "MINIMUM" | "TARGET" | "VERY_GOOD";
 
 export function calcAchievedLevel(
-  units: number,
-  goals: { minimum: number; target: number; veryGood: number }
-): AchievedLevel {
+  units: number | null,
+  goals: { minimum: number | null; target: number | null; veryGood: number | null }
+): AchievedLevel | null {
+  if (
+    units === null ||
+    goals.minimum === null ||
+    goals.target === null ||
+    goals.veryGood === null
+  ) {
+    return null;
+  }
+  if (units >= goals.veryGood) return "VERY_GOOD";
+  if (units >= goals.target) return "TARGET";
+  if (units >= goals.minimum) return "MINIMUM";
   return "BELOW_MINIMUM";
 }
