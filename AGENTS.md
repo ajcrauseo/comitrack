@@ -77,7 +77,7 @@ Enums: `ServiceCategory` (4 tipos), `Capacity` (5 tamaños), `TargetAchievement`
 Todas las funciones puras están en `src/lib/constants.ts`:
 
 - `techRates` — Mapa ServiceCategory → monto fijo ($0, $650, $1500, $2000)
-- `calcPurchaseCommission(count)` — Escalonada por cantidad en el mes, monto por equipo (1=$5800, 2=$6400/u, 3=$6900/u, 4+=$7300/u)
+- `calcPurchaseCommission(count, month, year)` — Escalonada por cantidad en el mes, monto por equipo. Hasta oct/2026: 1=$5800, 2=$6400/u, 3=$6900/u, 4+=$7300/u. Desde nov/2026: 1=$5000, 2=$5800/u, 3=$6400/u, 4=$6900/u, 5+=$7300/u (ver abajo)
 - `calcDeviceSalesCommission(quantity, volume)` — Porcentaje sobre volumen según cantidad (0.5% a 1.6%)
 - `calcGeneralSalesCommission(grossVolume, deviceVolume, target)` — Base = bruto - volumen equipos, × tasa objetivo (1% a 1.8%)
 
@@ -91,6 +91,7 @@ Backlog: `.claude/plans/modificaciones de escalas comisionales.md`. Los meses an
 - **Servicio Técnico:** solo cambia `MODULO_BATERIA_PIN_O_MAYOR_20K`: $1500 (bajo el mínimo o al alcanzar el mínimo) / $2500 (objetivo) / $3500 (muy bueno). Si faltan objetivos o unidades del mes, se paga $1500 y se muestra un aviso. Las demás categorías no cambian.
 - Los montos de Servicio Técnico se calculan solo con `calcTechServiceRate` (`src/lib/constants.ts`); el nivel sale de `calcAchievedLevelFromRecord`. No repetir tarifas en el dashboard, el export ni el PDF.
 - **Compras de equipos:** nueva escala por equipo: 1=$5000, 2=$5800/u, 3=$6400/u, 4=$6900/u, 5+=$7300/u.
+- Los montos de Compras salen solo de `getPurchaseScale(month, year)` (`src/lib/constants.ts`), que elige la escala vieja (4 tramos) o la nueva (5 tramos) con el mismo corte de nov/2026 que Servicio Técnico (`levelApplies`). `calcPurchaseCommission` y la tabla de escala de la pantalla Compras leen esos mismos datos. No repetir montos de compras en el dashboard, el export, el PDF ni la pantalla.
 
 ## Estructura de Directorios
 
