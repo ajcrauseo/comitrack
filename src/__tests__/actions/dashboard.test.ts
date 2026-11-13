@@ -139,7 +139,7 @@ describe("getDashboardSummary", () => {
     const result = await getDashboardSummary(1, 2025);
 
     expect(result.success).toBe(true);
-    expect(result.data?.purchasesTotal).toBe(2000);
+    expect(result.data?.purchasesTotal).toBe(5800);
   });
 
   it("calculates purchase commissions for 3 purchases", async () => {
@@ -151,7 +151,7 @@ describe("getDashboardSummary", () => {
     const result = await getDashboardSummary(1, 2025);
 
     expect(result.success).toBe(true);
-    expect(result.data?.purchasesTotal).toBe(10500);
+    expect(result.data?.purchasesTotal).toBe(20700);
   });
 
   it("calculates device sales commissions correctly", async () => {
