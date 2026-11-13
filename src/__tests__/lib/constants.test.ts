@@ -10,6 +10,7 @@ import {
   calcDeviceSalesCommission,
   calcGeneralSalesCommission,
   calcAchievedLevel,
+  calcTechServiceRate,
   calcProjection,
   getDaysElapsed,
 } from "@/lib/constants";
@@ -307,5 +308,58 @@ describe("getDaysElapsed", () => {
     const today = new Date(2026, 10, 13);
     expect(getDaysElapsed(12, 2026, today)).toEqual({ elapsed: 0, daysInMonth: 31 }); // next month
     expect(getDaysElapsed(1, 2027, today)).toEqual({ elapsed: 0, daysInMonth: 31 }); // next year
+  });
+});
+
+describe("calcTechServiceRate", () => {
+  it("paga $1.500 por Módulo/Batería/Pin/>20k en nov/2026 bajo el mínimo", () => {
+    expect(
+      calcTechServiceRate("MODULO_BATERIA_PIN_O_MAYOR_20K", 11, 2026, "BELOW_MINIMUM")
+    ).toBe(1500);
+  });
+
+  it("paga $1.500 por Módulo/Batería/Pin/>20k en nov/2026 en el mínimo", () => {
+    expect(
+      calcTechServiceRate("MODULO_BATERIA_PIN_O_MAYOR_20K", 11, 2026, "MINIMUM")
+    ).toBe(1500);
+  });
+
+  it("paga $2.500 por Módulo/Batería/Pin/>20k en nov/2026 en el objetivo", () => {
+    expect(
+      calcTechServiceRate("MODULO_BATERIA_PIN_O_MAYOR_20K", 11, 2026, "TARGET")
+    ).toBe(2500);
+  });
+
+  it("paga $3.500 por Módulo/Batería/Pin/>20k en nov/2026 en muy bueno", () => {
+    expect(
+      calcTechServiceRate("MODULO_BATERIA_PIN_O_MAYOR_20K", 11, 2026, "VERY_GOOD")
+    ).toBe(3500);
+  });
+
+  it("paga $1.500 por Módulo/Batería/Pin/>20k en nov/2026 sin nivel", () => {
+    expect(
+      calcTechServiceRate("MODULO_BATERIA_PIN_O_MAYOR_20K", 11, 2026, null)
+    ).toBe(1500);
+  });
+
+  it("en el borde: oct/2026 paga $1.500 y nov/2026 paga $3.500 con muy bueno", () => {
+    expect(
+      calcTechServiceRate("MODULO_BATERIA_PIN_O_MAYOR_20K", 10, 2026, "VERY_GOOD")
+    ).toBe(1500);
+    expect(
+      calcTechServiceRate("MODULO_BATERIA_PIN_O_MAYOR_20K", 11, 2026, "VERY_GOOD")
+    ).toBe(3500);
+  });
+
+  it("paga $2.500 por Módulo/Batería/Pin/>20k en ene/2027 en el objetivo", () => {
+    expect(
+      calcTechServiceRate("MODULO_BATERIA_PIN_O_MAYOR_20K", 1, 2027, "TARGET")
+    ).toBe(2500);
+  });
+
+  it("no cambia las otras categorías en nov/2026 con muy bueno", () => {
+    expect(calcTechServiceRate("REVISION_APROBADA", 11, 2026, "VERY_GOOD")).toBe(2000);
+    expect(calcTechServiceRate("LIMPIEZA_O_MENOR_20K", 11, 2026, "VERY_GOOD")).toBe(650);
+    expect(calcTechServiceRate("DENEGADA_SIN_REPARACION", 11, 2026, "VERY_GOOD")).toBe(0);
   });
 });

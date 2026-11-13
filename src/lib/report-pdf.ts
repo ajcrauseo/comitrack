@@ -14,13 +14,6 @@ const serviceLabelsShort: Record<ServiceCategory, string> = {
   DENEGADA_SIN_REPARACION: "Denegada",
 };
 
-const serviceRates: Record<ServiceCategory, number> = {
-  MODULO_BATERIA_PIN_O_MAYOR_20K: 1500,
-  REVISION_APROBADA: 2000,
-  LIMPIEZA_O_MENOR_20K: 650,
-  DENEGADA_SIN_REPARACION: 0,
-};
-
 type ExportData = {
   month: number;
   year: number;
@@ -33,7 +26,7 @@ type ExportData = {
         date: Date;
         model: string;
         branch: string;
-        services: { serviceType: string; sku?: string | null }[];
+        services: { serviceType: string; sku?: string | null; amount: number }[];
         recordTotal: number;
       }[];
     };
@@ -223,7 +216,6 @@ export function generateReportPdf(data: ExportData) {
       const label =
         serviceLabelsShort[svc.serviceType as ServiceCategory] ||
         svc.serviceType;
-      const rate = serviceRates[svc.serviceType as ServiceCategory] || 0;
       const sku = svc.sku ? ` [${svc.sku}]` : "";
       techRows.push([
         i === 0 ? record.coders : "",
@@ -231,7 +223,7 @@ export function generateReportPdf(data: ExportData) {
         i === 0 ? record.model : "",
         i === 0 ? record.branch : "",
         `${label}${sku}`,
-        i === 0 ? formatARS(record.recordTotal) : `${formatARS(rate)}/u`,
+        i === 0 ? formatARS(record.recordTotal) : `${formatARS(svc.amount)}/u`,
       ]);
     }
   }

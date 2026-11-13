@@ -2,7 +2,8 @@
 
 import prisma from "@/lib/prisma";
 import {
-  techRates,
+  calcTechServiceRate,
+  calcAchievedLevel,
   calcPurchaseCommission,
   calcDeviceSalesCommission,
   calcGeneralSalesCommission,
@@ -18,7 +19,7 @@ type TechServiceRecord = {
   date: Date;
   model: string;
   branch: string;
-  services: { serviceType: string; sku?: string | null }[];
+  services: { serviceType: string; sku?: string | null; amount: number }[];
   recordTotal: number;
 };
 
@@ -76,20 +77,27 @@ export async function getExportData(month: number, year: number) {
       ]);
 
     // ── Servicio Técnico ──
-    const techRecords: TechServiceRecord[] = techServices.map((ts) => ({
-      coders: ts.coders,
-      date: ts.date,
-      model: ts.model,
-      branch: ts.branch,
-      services: ts.services.map((s) => ({
+    const level = calcAchievedLevel(generalSales?.unitsSold ?? null, {
+      minimum: generalSales?.unitsMinimum ?? null,
+      target: generalSales?.unitsTarget ?? null,
+      veryGood: generalSales?.unitsVeryGood ?? null,
+    });
+
+    const techRecords: TechServiceRecord[] = techServices.map((ts) => {
+      const services = ts.services.map((s) => ({
         serviceType: s.serviceType,
         sku: s.sku,
-      })),
-      recordTotal: ts.services.reduce(
-        (sum, s) => sum + (techRates[s.serviceType as ServiceCategory] || 0),
-        0
-      ),
-    }));
+        amount: calcTechServiceRate(s.serviceType as ServiceCategory, month, year, level),
+      }));
+      return {
+        coders: ts.coders,
+        date: ts.date,
+        model: ts.model,
+        branch: ts.branch,
+        services,
+        recordTotal: services.reduce((sum, s) => sum + s.amount, 0),
+      };
+    });
 
     const techTotal = techRecords.reduce((sum, r) => sum + r.recordTotal, 0);
 

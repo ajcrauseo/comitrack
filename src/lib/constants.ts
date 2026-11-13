@@ -179,3 +179,25 @@ export function getDaysElapsed(
     requested < current ? daysInMonth : requested > current ? 0 : today.getDate();
   return { elapsed, daysInMonth };
 }
+
+/** Monto de Módulo/Batería/Pin/>20k según el nivel alcanzado (desde nov/2026) */
+const modulePinRatesByLevel: Record<AchievedLevel, number> = {
+  BELOW_MINIMUM: 1500,
+  MINIMUM: 1500,
+  TARGET: 2500,
+  VERY_GOOD: 3500,
+};
+
+/** Monto de un servicio técnico según categoría, mes/año y nivel alcanzado */
+export function calcTechServiceRate(
+  category: ServiceCategory,
+  month: number,
+  year: number,
+  level: AchievedLevel | null
+): number {
+  const levelApplies = year * 12 + month >= 2026 * 12 + 11;
+  if (levelApplies && level && category === "MODULO_BATERIA_PIN_O_MAYOR_20K") {
+    return modulePinRatesByLevel[level];
+  }
+  return techRates[category];
+}

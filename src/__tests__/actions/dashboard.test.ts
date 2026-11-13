@@ -233,4 +233,123 @@ describe("getDashboardSummary", () => {
     expect(result.success).toBe(false);
     expect(result.error).toBeTruthy();
   });
+
+  it("paga $2.500 por servicio Módulo/Batería/Pin/>20k en nov/2026 si se alcanzó el objetivo", async () => {
+    const svc = (id: string) => ({
+      serviceType: "MODULO_BATERIA_PIN_O_MAYOR_20K" as const,
+      id,
+      technicalServiceId: "ts-1",
+      sku: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    mockPrisma.technicalService.findMany.mockResolvedValue([
+      {
+        id: "ts-1",
+        coders: "TS001",
+        date: new Date("2026-11-10"),
+        model: "iPhone 14",
+        branch: "Sucursal A",
+        userId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        services: [svc("s1"), svc("s2")],
+      },
+    ]);
+    mockPrisma.devicePurchase.count.mockResolvedValue(0);
+    mockPrisma.deviceSalesMonthly.findUnique.mockResolvedValue(null);
+    mockPrisma.generalSalesMonthly.findUnique.mockResolvedValue({
+      id: "gs-1",
+      month: 11,
+      year: 2026,
+      grossSalesVolume: 0,
+      target: "LESS_THAN_100",
+      unitsMinimum: 100,
+      unitsTarget: 150,
+      unitsVeryGood: 200,
+      unitsSold: 160,
+      userId: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const result = await getDashboardSummary(11, 2026);
+
+    expect(result.data?.techServiceTotal).toBe(5000);
+  });
+
+  it("sigue pagando $1.500 por servicio Módulo/Batería/Pin/>20k en oct/2026 aunque se alcanzó el objetivo", async () => {
+    const svc = (id: string) => ({
+      serviceType: "MODULO_BATERIA_PIN_O_MAYOR_20K" as const,
+      id,
+      technicalServiceId: "ts-1",
+      sku: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    mockPrisma.technicalService.findMany.mockResolvedValue([
+      {
+        id: "ts-1",
+        coders: "TS001",
+        date: new Date("2026-10-10"),
+        model: "iPhone 14",
+        branch: "Sucursal A",
+        userId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        services: [svc("s1"), svc("s2")],
+      },
+    ]);
+    mockPrisma.devicePurchase.count.mockResolvedValue(0);
+    mockPrisma.deviceSalesMonthly.findUnique.mockResolvedValue(null);
+    mockPrisma.generalSalesMonthly.findUnique.mockResolvedValue({
+      id: "gs-1",
+      month: 10,
+      year: 2026,
+      grossSalesVolume: 0,
+      target: "LESS_THAN_100",
+      unitsMinimum: 100,
+      unitsTarget: 150,
+      unitsVeryGood: 200,
+      unitsSold: 160,
+      userId: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const result = await getDashboardSummary(10, 2026);
+
+    expect(result.data?.techServiceTotal).toBe(3000);
+  });
+
+  it("paga $1.500 por servicio Módulo/Batería/Pin/>20k en nov/2026 si no hay registro de Ventas Generales", async () => {
+    const svc = (id: string) => ({
+      serviceType: "MODULO_BATERIA_PIN_O_MAYOR_20K" as const,
+      id,
+      technicalServiceId: "ts-1",
+      sku: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    mockPrisma.technicalService.findMany.mockResolvedValue([
+      {
+        id: "ts-1",
+        coders: "TS001",
+        date: new Date("2026-11-10"),
+        model: "iPhone 14",
+        branch: "Sucursal A",
+        userId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        services: [svc("s1"), svc("s2")],
+      },
+    ]);
+    mockPrisma.devicePurchase.count.mockResolvedValue(0);
+    mockPrisma.deviceSalesMonthly.findUnique.mockResolvedValue(null);
+    mockPrisma.generalSalesMonthly.findUnique.mockResolvedValue(null);
+
+    const result = await getDashboardSummary(11, 2026);
+
+    expect(result.data?.techServiceTotal).toBe(3000);
+  });
 });
