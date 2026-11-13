@@ -113,6 +113,10 @@ model GeneralSalesMonthly {
   year             Int
   grossSalesVolume Float
   target           TargetAchievement
+  unitsMinimum     Float?
+  unitsTarget      Float?
+  unitsVeryGood    Float?
+  unitsSold        Float?
 
   userId           String?
   user             User?    @relation(fields: [userId], references: [id])

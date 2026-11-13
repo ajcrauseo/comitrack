@@ -32,19 +32,38 @@ export async function getGeneralSales(month: number, year: number) {
 export async function upsertGeneralSales(
   month: number,
   year: number,
-  data: { grossSalesVolume: number; target: TargetKey }
+  data: {
+    grossSalesVolume: number;
+    target: TargetKey;
+    unitsMinimum?: number | null;
+    unitsTarget?: number | null;
+    unitsVeryGood?: number | null;
+    unitsSold?: number | null;
+  }
 ) {
   try {
     await requireAdmin();
+    const loaded = [data.unitsMinimum, data.unitsTarget, data.unitsVeryGood].filter(
+      (v): v is number => v != null
+    );
+    if (loaded.some((v, i) => i > 0 && v < loaded[i - 1])) {
+      return {
+        success: false,
+        error: "Los objetivos deben cumplir: mínimo ≤ objetivo ≤ muy bueno.",
+      };
+    }
+    const fields = {
+      grossSalesVolume: data.grossSalesVolume,
+      target: data.target,
+      unitsMinimum: data.unitsMinimum ?? null,
+      unitsTarget: data.unitsTarget ?? null,
+      unitsVeryGood: data.unitsVeryGood ?? null,
+      unitsSold: data.unitsSold ?? null,
+    };
     const record = await prisma.generalSalesMonthly.upsert({
       where: { month_year: { month, year } },
-      update: { grossSalesVolume: data.grossSalesVolume, target: data.target },
-      create: {
-        month,
-        year,
-        grossSalesVolume: data.grossSalesVolume,
-        target: data.target,
-      },
+      update: fields,
+      create: { month, year, ...fields },
     });
 
     revalidatePath("/ventas-generales");
