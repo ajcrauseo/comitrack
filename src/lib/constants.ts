@@ -204,6 +204,11 @@ const modulePinRatesByLevel: Record<AchievedLevel, number> = {
   VERY_GOOD: 3500,
 };
 
+/** true si en ese mes/año rige el nivel alcanzado (desde nov/2026) */
+function levelApplies(month: number, year: number): boolean {
+  return year * 12 + month >= 2026 * 12 + 11;
+}
+
 /** Monto de un servicio técnico según categoría, mes/año y nivel alcanzado */
 export function calcTechServiceRate(
   category: ServiceCategory,
@@ -211,8 +216,7 @@ export function calcTechServiceRate(
   year: number,
   level: AchievedLevel | null
 ): number {
-  const levelApplies = year * 12 + month >= 2026 * 12 + 11;
-  if (levelApplies && level && category === "MODULO_BATERIA_PIN_O_MAYOR_20K") {
+  if (levelApplies(month, year) && level && category === "MODULO_BATERIA_PIN_O_MAYOR_20K") {
     return modulePinRatesByLevel[level];
   }
   return techRates[category];
