@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { calcTechServiceRate, calcAchievedLevelFromRecord, calcPurchaseCommission, calcDeviceSalesCommission, calcGeneralSalesCommission } from "@/lib/constants";
+import { calcTechServiceRate, calcAchievedLevelFromRecord, isLevelIncomplete, calcPurchaseCommission, calcDeviceSalesCommission, calcGeneralSalesCommission } from "@/lib/constants";
 
 export async function getDashboardSummary(month: number, year: number) {
   const startDate = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0, 0));
@@ -59,6 +59,7 @@ export async function getDashboardSummary(month: number, year: number) {
         deviceSalesTotal: totalDeviceSales,
         generalSalesTotal: totalGeneralSales,
         grandTotal,
+        techServiceIncomplete: isLevelIncomplete(month, year, level),
       }
     };
   } catch (error) {

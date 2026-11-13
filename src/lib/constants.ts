@@ -209,6 +209,15 @@ function levelApplies(month: number, year: number): boolean {
   return year * 12 + month >= 2026 * 12 + 11;
 }
 
+/** true si en ese mes/año rige el nivel pero falta algún dato para calcularlo */
+export function isLevelIncomplete(
+  month: number,
+  year: number,
+  level: AchievedLevel | null
+): boolean {
+  return levelApplies(month, year) && level === null;
+}
+
 /** Monto de un servicio técnico según categoría, mes/año y nivel alcanzado */
 export function calcTechServiceRate(
   category: ServiceCategory,

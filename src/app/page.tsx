@@ -5,6 +5,7 @@ import { useDateStore } from "@/store/useDateStore";
 import { getDashboardSummary } from "@/actions/dashboard";
 import { getExportData } from "@/actions/export";
 import { formatARS } from "@/lib/utils";
+import { TechServiceIncompleteNotice } from "@/components/ui/TechServiceIncompleteNotice";
 import {
   Wrench,
   Smartphone,
@@ -21,6 +22,7 @@ type DashboardData = {
   deviceSalesTotal: number;
   generalSalesTotal: number;
   grandTotal: number;
+  techServiceIncomplete: boolean;
 };
 
 const cards = [
@@ -68,6 +70,7 @@ export default function DashboardPage() {
     deviceSalesTotal: 0,
     generalSalesTotal: 0,
     grandTotal: 0,
+    techServiceIncomplete: false,
   });
 
   useEffect(() => {
@@ -130,6 +133,8 @@ export default function DashboardPage() {
           </button>
         </div>
       </div>
+
+      {data.techServiceIncomplete && <TechServiceIncompleteNotice />}
 
       {/* Cards grid: 2 cols on mobile, 4 on lg */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">

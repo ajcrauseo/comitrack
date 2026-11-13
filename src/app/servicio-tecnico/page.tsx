@@ -9,7 +9,7 @@ import {
   updateTechnicalService,
   deleteTechnicalService,
 } from "@/actions/technicalService";
-import { ServiceCategory, AchievedLevel, calcTechServiceRate, serviceLabels } from "@/lib/constants";
+import { ServiceCategory, AchievedLevel, calcTechServiceRate, isLevelIncomplete, serviceLabels } from "@/lib/constants";
 import { formatARS } from "@/lib/utils";
 import {
   Wrench,
@@ -25,6 +25,7 @@ import {
   Search,
 } from "lucide-react";
 import { DatePicker } from "@/components/ui/DatePicker";
+import { TechServiceIncompleteNotice } from "@/components/ui/TechServiceIncompleteNotice";
 import { BorderBeam } from "border-beam";
 
 type TechnicalServiceRecord = {
@@ -239,6 +240,7 @@ export default function ServicioTecnicoPage() {
   const [isPending, startTransition] = useTransition();
   const [records, setRecords] = useState<TechnicalServiceRecord[]>([]);
   const [level, setLevel] = useState<AchievedLevel | null>(null);
+  const [levelIncomplete, setLevelIncomplete] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
@@ -269,6 +271,7 @@ export default function ServicioTecnicoPage() {
         if (res.success && res.data) {
           setRecords(res.data);
           setLevel(res.level ?? null);
+          setLevelIncomplete(isLevelIncomplete(month, year, res.level ?? null));
         }
       });
     });
@@ -453,6 +456,8 @@ export default function ServicioTecnicoPage() {
             </div>
           </div>
         </div>
+
+        {levelIncomplete && <TechServiceIncompleteNotice />}
 
         {role === "ADMIN" && (
           <button

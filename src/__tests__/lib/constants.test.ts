@@ -11,6 +11,7 @@ import {
   calcGeneralSalesCommission,
   calcAchievedLevel,
   calcTechServiceRate,
+  isLevelIncomplete,
   calcProjection,
   getDaysElapsed,
 } from "@/lib/constants";
@@ -367,5 +368,24 @@ describe("calcTechServiceRate", () => {
     expect(calcTechServiceRate("REVISION_APROBADA", 11, 2026, "VERY_GOOD")).toBe(2000);
     expect(calcTechServiceRate("LIMPIEZA_O_MENOR_20K", 11, 2026, "VERY_GOOD")).toBe(650);
     expect(calcTechServiceRate("DENEGADA_SIN_REPARACION", 11, 2026, "VERY_GOOD")).toBe(0);
+  });
+});
+
+describe("isLevelIncomplete", () => {
+  it("es true en nov/2026 si el nivel no se pudo calcular", () => {
+    expect(isLevelIncomplete(11, 2026, null)).toBe(true);
+  });
+
+  it("es true en meses posteriores a nov/2026 (ene/2027) si el nivel no se pudo calcular", () => {
+    expect(isLevelIncomplete(1, 2027, null)).toBe(true);
+  });
+
+  it("es false en oct/2026 (mes anterior al corte) aunque el nivel sea null", () => {
+    expect(isLevelIncomplete(10, 2026, null)).toBe(false);
+  });
+
+  it("es false en nov/2026 si el nivel está calculado, incluso bajo el mínimo", () => {
+    expect(isLevelIncomplete(11, 2026, "BELOW_MINIMUM")).toBe(false);
+    expect(isLevelIncomplete(11, 2026, "VERY_GOOD")).toBe(false);
   });
 });

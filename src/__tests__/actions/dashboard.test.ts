@@ -53,7 +53,7 @@ function mockTwoModuleServices(date: string) {
   mockPrisma.deviceSalesMonthly.findUnique.mockResolvedValue(null);
 }
 
-function mockGeneralSalesWithUnits(month: number, unitsSold: number) {
+function mockGeneralSalesWithUnits(month: number, unitsSold: number | null) {
   mockPrisma.generalSalesMonthly.findUnique.mockResolvedValue({
     id: "gs-1",
     month,
@@ -86,6 +86,7 @@ describe("getDashboardSummary", () => {
       deviceSalesTotal: 0,
       generalSalesTotal: 0,
       grandTotal: 0,
+      techServiceIncomplete: false,
     });
   });
 
@@ -303,5 +304,41 @@ describe("getDashboardSummary", () => {
     const result = await getDashboardSummary(11, 2026);
 
     expect(result.data?.techServiceTotal).toBe(3000);
+  });
+
+  it("marca techServiceIncomplete en nov/2026 si no hay registro de Ventas Generales", async () => {
+    mockTwoModuleServices("2026-11-10");
+    mockPrisma.generalSalesMonthly.findUnique.mockResolvedValue(null);
+
+    const result = await getDashboardSummary(11, 2026);
+
+    expect(result.data?.techServiceIncomplete).toBe(true);
+  });
+
+  it("marca techServiceIncomplete en nov/2026 si el registro no tiene unidades vendidas", async () => {
+    mockTwoModuleServices("2026-11-10");
+    mockGeneralSalesWithUnits(11, null);
+
+    const result = await getDashboardSummary(11, 2026);
+
+    expect(result.data?.techServiceIncomplete).toBe(true);
+  });
+
+  it("no marca techServiceIncomplete en nov/2026 si están los cuatro datos cargados", async () => {
+    mockTwoModuleServices("2026-11-10");
+    mockGeneralSalesWithUnits(11, 120);
+
+    const result = await getDashboardSummary(11, 2026);
+
+    expect(result.data?.techServiceIncomplete).toBe(false);
+  });
+
+  it("no marca techServiceIncomplete en oct/2026 aunque no haya datos de Ventas Generales", async () => {
+    mockTwoModuleServices("2026-10-10");
+    mockPrisma.generalSalesMonthly.findUnique.mockResolvedValue(null);
+
+    const result = await getDashboardSummary(10, 2026);
+
+    expect(result.data?.techServiceIncomplete).toBe(false);
   });
 });
