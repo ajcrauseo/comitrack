@@ -7,7 +7,6 @@ import {
   calcPurchaseCommission,
   calcDeviceSalesCommission,
   calcGeneralSalesCommission,
-  serviceLabels,
   targetLabels,
   targetRates,
   type ServiceCategory,
