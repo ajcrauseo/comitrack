@@ -11,6 +11,7 @@ import {
   calcGeneralSalesCommission,
   calcAchievedLevel,
   calcProjection,
+  getDaysElapsed,
 } from "@/lib/constants";
 
 describe("techRates", () => {
@@ -276,5 +277,35 @@ describe("calcAchievedLevel", () => {
 describe("calcProjection", () => {
   it("projects units sold over the whole month from the days elapsed", () => {
     expect(calcProjection(120, 10, 30)).toBe(360);
+  });
+
+  it("rounds the projection to the nearest whole unit", () => {
+    expect(calcProjection(120, 13, 30)).toBe(277); // 276.92...
+    expect(calcProjection(100, 7, 30)).toBe(429); // 428.57...
+  });
+
+  it("returns null when units are missing or no days have elapsed", () => {
+    expect(calcProjection(null, 10, 30)).toBeNull();
+    expect(calcProjection(120, 0, 30)).toBeNull();
+  });
+});
+
+describe("getDaysElapsed", () => {
+  it("returns today's day and the month length for the current month", () => {
+    const today = new Date(2026, 10, 13); // 13 nov 2026
+    expect(getDaysElapsed(11, 2026, today)).toEqual({ elapsed: 13, daysInMonth: 30 });
+  });
+
+  it("returns the whole month for a past month", () => {
+    const today = new Date(2026, 10, 13);
+    expect(getDaysElapsed(10, 2026, today)).toEqual({ elapsed: 31, daysInMonth: 31 }); // oct 2026
+    expect(getDaysElapsed(12, 2025, today)).toEqual({ elapsed: 31, daysInMonth: 31 }); // previous year
+    expect(getDaysElapsed(2, 2024, today)).toEqual({ elapsed: 29, daysInMonth: 29 }); // leap year
+  });
+
+  it("returns 0 elapsed days for a future month", () => {
+    const today = new Date(2026, 10, 13);
+    expect(getDaysElapsed(12, 2026, today)).toEqual({ elapsed: 0, daysInMonth: 31 }); // next month
+    expect(getDaysElapsed(1, 2027, today)).toEqual({ elapsed: 0, daysInMonth: 31 }); // next year
   });
 });

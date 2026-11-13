@@ -159,9 +159,26 @@ export function areGoalsInOrder(
 }
 
 export function calcProjection(
-  units: number,
+  units: number | null,
   daysElapsed: number,
   daysInMonth: number
-): number {
-  return (units / daysElapsed) * daysInMonth;
+): number | null {
+  if (units === null || daysElapsed <= 0) return null;
+  return Math.round((units / daysElapsed) * daysInMonth);
+}
+
+export function getDaysElapsed(
+  month: number,
+  year: number,
+  today: Date
+): { elapsed: number; daysInMonth: number } {
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const isPast =
+    year < today.getFullYear() ||
+    (year === today.getFullYear() && month < today.getMonth() + 1);
+  const isFuture =
+    year > today.getFullYear() ||
+    (year === today.getFullYear() && month > today.getMonth() + 1);
+  const elapsed = isPast ? daysInMonth : isFuture ? 0 : today.getDate();
+  return { elapsed, daysInMonth };
 }

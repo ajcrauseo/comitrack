@@ -10,6 +10,8 @@ import {
   targetRates,
   calcGeneralSalesCommission,
   calcAchievedLevel,
+  calcProjection,
+  getDaysElapsed,
   areGoalsInOrder,
   levelLabels,
 } from "@/lib/constants";
@@ -43,6 +45,10 @@ export default function VentasGeneralesPage() {
     target: toNum(unitsTarget),
     veryGood: toNum(unitsVeryGood),
   });
+
+  const soldNum = toNum(unitsSold);
+  const { elapsed, daysInMonth } = getDaysElapsed(month, year, new Date());
+  const projection = calcProjection(soldNum, elapsed, daysInMonth);
 
   const loadData = () => {
     startTransition(() => {
@@ -243,15 +249,43 @@ export default function VentasGeneralesPage() {
           </div>
 
           {/* Units level */}
-          {level && (
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-              <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-2">
-                Nivel de unidades
+          {soldNum !== null && (
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6">
+              <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-3">
+                Unidades del mes
               </p>
-              <p className="text-2xl font-bold text-purple-300">{levelLabels[level]}</p>
-              <p className="text-xs text-slate-500 mt-1 tabular-nums">
-                {unitsSold} unidades vendidas
-              </p>
+
+              <div className={`grid gap-4 ${projection !== null ? "grid-cols-2" : "grid-cols-1"}`}>
+                <div>
+                  <p className="text-4xl sm:text-5xl font-extrabold text-white tabular-nums">
+                    {soldNum}
+                  </p>
+                  <p className="text-xs text-slate-400 mt-1">Unidades vendidas</p>
+                </div>
+                {projection !== null && (
+                  <div>
+                    <p className="text-4xl sm:text-5xl font-extrabold text-purple-300 tabular-nums">
+                      {projection}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Proyección ({elapsed} de {daysInMonth} días)
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {level && (
+                <p className="text-sm text-slate-300 mt-4">
+                  Nivel alcanzado:{" "}
+                  <span className="font-semibold text-purple-300">{levelLabels[level]}</span>
+                </p>
+              )}
+
+              <div className="mt-4 pt-3 border-t border-slate-800 flex gap-4 text-xs text-slate-500 tabular-nums">
+                <span>Mínimo {unitsMinimum || "—"}</span>
+                <span>Objetivo {unitsTarget || "—"}</span>
+                <span>Muy bueno {unitsVeryGood || "—"}</span>
+              </div>
             </div>
           )}
 
