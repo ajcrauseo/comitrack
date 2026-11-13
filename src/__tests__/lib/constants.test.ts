@@ -9,6 +9,7 @@ import {
   calcPurchaseCommission,
   calcDeviceSalesCommission,
   calcGeneralSalesCommission,
+  calcAchievedLevel,
 } from "@/lib/constants";
 
 describe("techRates", () => {
@@ -234,5 +235,13 @@ describe("calcGeneralSalesCommission", () => {
     expect(r2.commission).toBeCloseTo(base * 0.014);
     expect(r3.commission).toBeCloseTo(base * 0.016);
     expect(r4.commission).toBeCloseTo(base * 0.018);
+  });
+});
+
+describe("calcAchievedLevel", () => {
+  const goals = { minimum: 100, target: 150, veryGood: 200 };
+
+  it("returns BELOW_MINIMUM when units are under the minimum", () => {
+    expect(calcAchievedLevel(99, goals)).toBe("BELOW_MINIMUM");
   });
 });

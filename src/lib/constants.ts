@@ -120,3 +120,12 @@ export function calcGeneralSalesCommission(
   const base = Math.max(0, grossVolume - deviceVolume);
   return { base, commission: base * targetRates[target] };
 }
+
+export type AchievedLevel = "BELOW_MINIMUM" | "MINIMUM" | "TARGET" | "VERY_GOOD";
+
+export function calcAchievedLevel(
+  units: number,
+  goals: { minimum: number; target: number; veryGood: number }
+): AchievedLevel {
+  return "BELOW_MINIMUM";
+}
