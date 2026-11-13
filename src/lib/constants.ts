@@ -141,6 +141,22 @@ export function calcAchievedLevel(
   return "BELOW_MINIMUM";
 }
 
+/** Nivel alcanzado a partir del registro mensual de Ventas Generales (null si falta el registro o algún dato) */
+export function calcAchievedLevelFromRecord(
+  record: {
+    unitsSold: number | null;
+    unitsMinimum: number | null;
+    unitsTarget: number | null;
+    unitsVeryGood: number | null;
+  } | null
+): AchievedLevel | null {
+  return calcAchievedLevel(record?.unitsSold ?? null, {
+    minimum: record?.unitsMinimum ?? null,
+    target: record?.unitsTarget ?? null,
+    veryGood: record?.unitsVeryGood ?? null,
+  });
+}
+
 export const levelLabels: Record<AchievedLevel, string> = {
   BELOW_MINIMUM: "Bajo el mínimo",
   MINIMUM: "Mínimo",

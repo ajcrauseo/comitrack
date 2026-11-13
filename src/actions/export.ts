@@ -3,7 +3,7 @@
 import prisma from "@/lib/prisma";
 import {
   calcTechServiceRate,
-  calcAchievedLevel,
+  calcAchievedLevelFromRecord,
   calcPurchaseCommission,
   calcDeviceSalesCommission,
   calcGeneralSalesCommission,
@@ -77,11 +77,7 @@ export async function getExportData(month: number, year: number) {
       ]);
 
     // ── Servicio Técnico ──
-    const level = calcAchievedLevel(generalSales?.unitsSold ?? null, {
-      minimum: generalSales?.unitsMinimum ?? null,
-      target: generalSales?.unitsTarget ?? null,
-      veryGood: generalSales?.unitsVeryGood ?? null,
-    });
+    const level = calcAchievedLevelFromRecord(generalSales);
 
     const techRecords: TechServiceRecord[] = techServices.map((ts) => {
       const services = ts.services.map((s) => ({

@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { calcTechServiceRate, calcAchievedLevel, calcPurchaseCommission, calcDeviceSalesCommission, calcGeneralSalesCommission } from "@/lib/constants";
+import { calcTechServiceRate, calcAchievedLevelFromRecord, calcPurchaseCommission, calcDeviceSalesCommission, calcGeneralSalesCommission } from "@/lib/constants";
 
 export async function getDashboardSummary(month: number, year: number) {
   const startDate = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0, 0));
@@ -24,11 +24,7 @@ export async function getDashboardSummary(month: number, year: number) {
       })
     ]);
 
-    const level = calcAchievedLevel(generalSales?.unitsSold ?? null, {
-      minimum: generalSales?.unitsMinimum ?? null,
-      target: generalSales?.unitsTarget ?? null,
-      veryGood: generalSales?.unitsVeryGood ?? null,
-    });
+    const level = calcAchievedLevelFromRecord(generalSales);
 
     const totalTechService = techServices.reduce(
       (sum, ts) =>
