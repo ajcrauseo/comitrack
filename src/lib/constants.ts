@@ -140,3 +140,28 @@ export function calcAchievedLevel(
   if (units >= goals.minimum) return "MINIMUM";
   return "BELOW_MINIMUM";
 }
+
+export const levelLabels: Record<AchievedLevel, string> = {
+  BELOW_MINIMUM: "Bajo el mínimo",
+  MINIMUM: "Mínimo",
+  TARGET: "Objetivo",
+  VERY_GOOD: "Muy bueno",
+};
+
+/** true si los objetivos cargados cumplen mínimo ≤ objetivo ≤ muy bueno (los vacíos se ignoran) */
+export function areGoalsInOrder(
+  minimum: number | null | undefined,
+  target: number | null | undefined,
+  veryGood: number | null | undefined
+): boolean {
+  const loaded = [minimum, target, veryGood].filter((v): v is number => v != null);
+  return loaded.every((v, i) => i === 0 || v >= loaded[i - 1]);
+}
+
+export function calcProjection(
+  units: number,
+  daysElapsed: number,
+  daysInMonth: number
+): number {
+  return (units / daysElapsed) * daysInMonth;
+}

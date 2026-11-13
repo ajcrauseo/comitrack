@@ -2,7 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { TargetKey } from "@/lib/constants";
+import { TargetKey, areGoalsInOrder } from "@/lib/constants";
 import { requireAdmin } from "@/lib/auth";
 
 export async function getGeneralSales(month: number, year: number) {
@@ -43,10 +43,7 @@ export async function upsertGeneralSales(
 ) {
   try {
     await requireAdmin();
-    const loaded = [data.unitsMinimum, data.unitsTarget, data.unitsVeryGood].filter(
-      (v): v is number => v != null
-    );
-    if (loaded.some((v, i) => i > 0 && v < loaded[i - 1])) {
+    if (!areGoalsInOrder(data.unitsMinimum, data.unitsTarget, data.unitsVeryGood)) {
       return {
         success: false,
         error: "Los objetivos deben cumplir: mínimo ≤ objetivo ≤ muy bueno.",

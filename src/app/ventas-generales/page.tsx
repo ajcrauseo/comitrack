@@ -9,6 +9,9 @@ import {
   targetLabels,
   targetRates,
   calcGeneralSalesCommission,
+  calcAchievedLevel,
+  areGoalsInOrder,
+  levelLabels,
 } from "@/lib/constants";
 import { formatARS } from "@/lib/utils";
 import { TrendingUp, Save, Loader2, ArrowRight, Info } from "lucide-react";
@@ -26,9 +29,20 @@ export default function VentasGeneralesPage() {
   const [grossVolume, setGrossVolume] = useState("");
   const [target, setTarget] = useState<TargetKey>("LESS_THAN_100");
   const [deviceSalesVolume, setDeviceSalesVolume] = useState(0);
+  const [unitsMinimum, setUnitsMinimum] = useState("");
+  const [unitsTarget, setUnitsTarget] = useState("");
+  const [unitsVeryGood, setUnitsVeryGood] = useState("");
+  const [unitsSold, setUnitsSold] = useState("");
 
   const gross = parseFloat(grossVolume) || 0;
   const { base, commission } = calcGeneralSalesCommission(gross, deviceSalesVolume, target);
+
+  const toNum = (v: string) => (v.trim() === "" ? null : Number(v));
+  const level = calcAchievedLevel(toNum(unitsSold), {
+    minimum: toNum(unitsMinimum),
+    target: toNum(unitsTarget),
+    veryGood: toNum(unitsVeryGood),
+  });
 
   const loadData = () => {
     startTransition(() => {
@@ -39,9 +53,17 @@ export default function VentasGeneralesPage() {
           if (record) {
             setGrossVolume(record.grossSalesVolume.toString());
             setTarget(record.target as TargetKey);
+            setUnitsMinimum(record.unitsMinimum?.toString() ?? "");
+            setUnitsTarget(record.unitsTarget?.toString() ?? "");
+            setUnitsVeryGood(record.unitsVeryGood?.toString() ?? "");
+            setUnitsSold(record.unitsSold?.toString() ?? "");
           } else {
             setGrossVolume("");
             setTarget("LESS_THAN_100");
+            setUnitsMinimum("");
+            setUnitsTarget("");
+            setUnitsVeryGood("");
+            setUnitsSold("");
           }
         }
       });
@@ -56,6 +78,11 @@ export default function VentasGeneralesPage() {
       setErrorMsg("Ingresa el volumen bruto.");
       return;
     }
+    if (!areGoalsInOrder(toNum(unitsMinimum), toNum(unitsTarget), toNum(unitsVeryGood))) {
+      setSuccessMsg("");
+      setErrorMsg("Los objetivos deben cumplir: mínimo ≤ objetivo ≤ muy bueno.");
+      return;
+    }
     setErrorMsg("");
     setSuccessMsg("");
     setIsSaving(true);
@@ -63,6 +90,10 @@ export default function VentasGeneralesPage() {
     const res = await upsertGeneralSales(month, year, {
       grossSalesVolume: gross,
       target,
+      unitsMinimum: toNum(unitsMinimum),
+      unitsTarget: toNum(unitsTarget),
+      unitsVeryGood: toNum(unitsVeryGood),
+      unitsSold: toNum(unitsSold),
     });
 
     if (res.success) {
@@ -117,6 +148,33 @@ export default function VentasGeneralesPage() {
                 className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 placeholder="Ej: 15000000"
               />
+            </div>
+
+            {/* Unit goals */}
+            <div>
+              <label className="block text-xs sm:text-sm font-medium text-slate-400 mb-3">
+                Objetivos de unidades
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { label: "Mínimo", value: unitsMinimum, set: setUnitsMinimum },
+                  { label: "Objetivo", value: unitsTarget, set: setUnitsTarget },
+                  { label: "Muy bueno", value: unitsVeryGood, set: setUnitsVeryGood },
+                  { label: "Unidades vendidas", value: unitsSold, set: setUnitsSold },
+                ].map((f) => (
+                  <div key={f.label}>
+                    <label className="block text-xs text-slate-500 mb-1">{f.label}</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={f.value}
+                      onChange={(e) => f.set(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-lg py-2 px-3 text-slate-200 focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Target radio buttons */}
@@ -183,6 +241,19 @@ export default function VentasGeneralesPage() {
               </p>
             )}
           </div>
+
+          {/* Units level */}
+          {level && (
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+              <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-2">
+                Nivel de unidades
+              </p>
+              <p className="text-2xl font-bold text-purple-300">{levelLabels[level]}</p>
+              <p className="text-xs text-slate-500 mt-1 tabular-nums">
+                {unitsSold} unidades vendidas
+              </p>
+            </div>
+          )}
 
           {/* Calculation breakdown */}
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">

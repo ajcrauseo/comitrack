@@ -10,6 +10,7 @@ import {
   calcDeviceSalesCommission,
   calcGeneralSalesCommission,
   calcAchievedLevel,
+  calcProjection,
 } from "@/lib/constants";
 
 describe("techRates", () => {
@@ -269,5 +270,11 @@ describe("calcAchievedLevel", () => {
     ["veryGood", 120, { ...goals, veryGood: null }],
   ])("returns null when %s is missing", (_name, units, g) => {
     expect(calcAchievedLevel(units, g)).toBeNull();
+  });
+});
+
+describe("calcProjection", () => {
+  it("projects units sold over the whole month from the days elapsed", () => {
+    expect(calcProjection(120, 10, 30)).toBe(360);
   });
 });
