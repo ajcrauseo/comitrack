@@ -173,12 +173,9 @@ export function getDaysElapsed(
   today: Date
 ): { elapsed: number; daysInMonth: number } {
   const daysInMonth = new Date(year, month, 0).getDate();
-  const isPast =
-    year < today.getFullYear() ||
-    (year === today.getFullYear() && month < today.getMonth() + 1);
-  const isFuture =
-    year > today.getFullYear() ||
-    (year === today.getFullYear() && month > today.getMonth() + 1);
-  const elapsed = isPast ? daysInMonth : isFuture ? 0 : today.getDate();
+  const requested = year * 12 + month;
+  const current = today.getFullYear() * 12 + today.getMonth() + 1;
+  const elapsed =
+    requested < current ? daysInMonth : requested > current ? 0 : today.getDate();
   return { elapsed, daysInMonth };
 }
