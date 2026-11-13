@@ -9,7 +9,7 @@ import {
   updateTechnicalService,
   deleteTechnicalService,
 } from "@/actions/technicalService";
-import { ServiceCategory, techRates, serviceLabels } from "@/lib/constants";
+import { ServiceCategory, AchievedLevel, calcTechServiceRate, serviceLabels } from "@/lib/constants";
 import { formatARS } from "@/lib/utils";
 import {
   Wrench,
@@ -48,12 +48,14 @@ function ServiceList({
   onSkuChange,
   selectId,
   onAdd,
+  rateFor,
 }: {
   services: SelectedService[];
   onRemove: (i: number) => void;
   onSkuChange: (i: number, sku: string) => void;
   selectId: string;
   onAdd: (cat: ServiceCategory) => void;
+  rateFor: (cat: ServiceCategory) => number;
 }) {
   return (
     <div className="pt-3 border-t border-slate-800">
@@ -105,6 +107,9 @@ function ServiceList({
               <div className="flex items-center justify-between gap-2">
                 <span className="text-slate-300 text-xs leading-snug flex-1">
                   {serviceLabels[srv.serviceType]}
+                </span>
+                <span className="shrink-0 text-xs font-medium text-blue-400 tabular-nums">
+                  {formatARS.format(rateFor(srv.serviceType))}
                 </span>
                 <button
                   type="button"
@@ -233,6 +238,7 @@ export default function ServicioTecnicoPage() {
   const { role } = useRole();
   const [isPending, startTransition] = useTransition();
   const [records, setRecords] = useState<TechnicalServiceRecord[]>([]);
+  const [level, setLevel] = useState<AchievedLevel | null>(null);
   const [isAdding, setIsAdding] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
@@ -260,7 +266,10 @@ export default function ServicioTecnicoPage() {
   const loadRecords = () => {
     startTransition(() => {
       getTechnicalServices(month, year).then((res) => {
-        if (res.success && res.data) setRecords(res.data);
+        if (res.success && res.data) {
+          setRecords(res.data);
+          setLevel(res.level ?? null);
+        }
       });
     });
   };
@@ -408,8 +417,11 @@ export default function ServicioTecnicoPage() {
     }
   };
 
+  const rateFor = (category: ServiceCategory) =>
+    calcTechServiceRate(category, month, year, level);
+
   const calculateRecordTotal = (services: { serviceType: string }[]) =>
-    services.reduce((acc, curr) => acc + (techRates[curr.serviceType as ServiceCategory] || 0), 0);
+    services.reduce((acc, curr) => acc + rateFor(curr.serviceType as ServiceCategory), 0);
 
   const monthTotal = records.reduce((acc, r) => acc + calculateRecordTotal(r.services), 0);
   const validRepairsCount = records.filter(r => calculateRecordTotal(r.services) > 0).length;
@@ -528,6 +540,7 @@ export default function ServicioTecnicoPage() {
                 onSkuChange={handleSkuChange}
                 selectId="serviceSelect"
                 onAdd={handleAddService}
+                rateFor={rateFor}
               />
 
               <button
@@ -569,6 +582,11 @@ export default function ServicioTecnicoPage() {
                     >
                       <span className="font-mono text-blue-400">{count}</span>
                       <span>{serviceLabels[type as ServiceCategory] || type}</span>
+                      {type in serviceLabels && (
+                        <span className="font-mono text-slate-400">
+                          {formatARS.format(rateFor(type as ServiceCategory))}
+                        </span>
+                      )}
                     </span>
                   ))}
               </div>
@@ -799,6 +817,7 @@ export default function ServicioTecnicoPage() {
                 onSkuChange={handleEditSkuChange}
                 selectId="editServiceSelect"
                 onAdd={handleEditAddService}
+                rateFor={rateFor}
               />
 
               <div className="flex gap-3 pt-1">

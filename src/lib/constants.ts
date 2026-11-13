@@ -12,10 +12,10 @@ export const techRates: Record<ServiceCategory, number> = {
 };
 
 export const serviceLabels: Record<ServiceCategory, string> = {
-  MODULO_BATERIA_PIN_O_MAYOR_20K: "Módulo, Batería, Pin o >20k ($1.500)",
-  REVISION_APROBADA: "Revisión Aprobada ($2.000)",
-  LIMPIEZA_O_MENOR_20K: "Limpieza o <20k ($650)",
-  DENEGADA_SIN_REPARACION: "Denegada / Sin Reparación ($0)",
+  MODULO_BATERIA_PIN_O_MAYOR_20K: "Módulo, Batería, Pin o >20k",
+  REVISION_APROBADA: "Revisión Aprobada",
+  LIMPIEZA_O_MENOR_20K: "Limpieza o <20k",
+  DENEGADA_SIN_REPARACION: "Denegada / Sin Reparación",
 };
 
 // ─── Compras de Equipos ────────────────────────────────────────────────────────

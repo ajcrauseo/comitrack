@@ -10,6 +10,9 @@ vi.mock("@/lib/prisma", () => ({
       update: vi.fn(),
       delete: vi.fn(),
     },
+    generalSalesMonthly: {
+      findUnique: vi.fn(),
+    },
   },
 }));
 
@@ -28,6 +31,57 @@ beforeEach(() => {
 });
 
 describe("getTechnicalServices", () => {
+  it("returns a null level when the month's goals or units are missing", async () => {
+    mockPrisma.technicalService.findMany.mockResolvedValue([]);
+    mockPrisma.generalSalesMonthly.findUnique.mockResolvedValue({
+      unitsSold: 150,
+      unitsMinimum: 100,
+      unitsTarget: null,
+      unitsVeryGood: 140,
+    } as never);
+
+    const result = await getTechnicalServices(11, 2026);
+    expect(result.success).toBe(true);
+    expect(result.level).toBeNull();
+  });
+
+  it("returns a null level when there is no general sales record for the month", async () => {
+    mockPrisma.technicalService.findMany.mockResolvedValue([]);
+    mockPrisma.generalSalesMonthly.findUnique.mockResolvedValue(null);
+
+    const result = await getTechnicalServices(11, 2026);
+    expect(result.success).toBe(true);
+    expect(result.level).toBeNull();
+  });
+
+  it("returns the VERY_GOOD level when units reach 'muy bueno'", async () => {
+    mockPrisma.technicalService.findMany.mockResolvedValue([]);
+    mockPrisma.generalSalesMonthly.findUnique.mockResolvedValue({
+      unitsSold: 150,
+      unitsMinimum: 100,
+      unitsTarget: 120,
+      unitsVeryGood: 140,
+    } as never);
+
+    const result = await getTechnicalServices(11, 2026);
+    expect(result.success).toBe(true);
+    expect(result.level).toBe("VERY_GOOD");
+  });
+
+  it("returns the TARGET level when units reach the month's target", async () => {
+    mockPrisma.technicalService.findMany.mockResolvedValue([]);
+    mockPrisma.generalSalesMonthly.findUnique.mockResolvedValue({
+      unitsSold: 120,
+      unitsMinimum: 100,
+      unitsTarget: 120,
+      unitsVeryGood: 140,
+    } as never);
+
+    const result = await getTechnicalServices(11, 2026);
+    expect(result.success).toBe(true);
+    expect(result.level).toBe("TARGET");
+  });
+
   it("returns services for the given month/year", async () => {
     const services = [
       {

@@ -2,7 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { ServiceCategory } from "@/lib/constants";
+import { ServiceCategory, calcAchievedLevelFromRecord } from "@/lib/constants";
 import { parseUTCDate } from "@/lib/utils";
 import { requireAdmin } from "@/lib/auth";
 
@@ -12,13 +12,18 @@ export async function getTechnicalServices(month: number, year: number) {
   const endDate = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
 
   try {
-    const services = await prisma.technicalService.findMany({
-      where: { date: { gte: startDate, lte: endDate } },
-      include: { services: true },
-      orderBy: { date: "desc" },
-    });
+    const [services, generalSales] = await Promise.all([
+      prisma.technicalService.findMany({
+        where: { date: { gte: startDate, lte: endDate } },
+        include: { services: true },
+        orderBy: { date: "desc" },
+      }),
+      prisma.generalSalesMonthly.findUnique({
+        where: { month_year: { month, year } },
+      }),
+    ]);
 
-    return { success: true, data: services };
+    return { success: true, data: services, level: calcAchievedLevelFromRecord(generalSales) };
   } catch (error) {
     console.error("Error fetching technical services:", error);
     return { success: false, error: "No se pudieron cargar los servicios técnicos." };

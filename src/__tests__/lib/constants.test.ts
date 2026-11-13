@@ -32,6 +32,12 @@ describe("serviceLabels", () => {
       expect(typeof serviceLabels[key]).toBe("string");
     }
   });
+
+  it("does not include an amount in any label", () => {
+    for (const label of Object.values(serviceLabels)) {
+      expect(label).not.toContain("$");
+    }
+  });
 });
 
 describe("IPHONE_MODELS", () => {
