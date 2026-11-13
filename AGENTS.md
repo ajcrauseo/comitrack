@@ -89,6 +89,7 @@ Backlog: `.claude/plans/modificaciones de escalas comisionales.md`. Los meses an
 
 - **Objetivos mensuales de unidades** (en Ventas Generales): 3 niveles (mínimo, objetivo, muy bueno) + unidades vendidas de la empresa, cargados a mano por mes y editables por ADMIN; el VIEWER los ve en solo lectura. Un objetivo se alcanza cuando unidades ≥ objetivo.
 - **Servicio Técnico:** solo cambia `MODULO_BATERIA_PIN_O_MAYOR_20K`: $1500 (bajo el mínimo o al alcanzar el mínimo) / $2500 (objetivo) / $3500 (muy bueno). Si faltan objetivos o unidades del mes, se paga $1500 y se muestra un aviso. Las demás categorías no cambian.
+- Los montos de Servicio Técnico se calculan solo con `calcTechServiceRate` (`src/lib/constants.ts`); el nivel sale de `calcAchievedLevelFromRecord`. No repetir tarifas en el dashboard, el export ni el PDF.
 - **Compras de equipos:** nueva escala por equipo: 1=$5000, 2=$5800/u, 3=$6400/u, 4=$6900/u, 5+=$7300/u.
 
 ## Estructura de Directorios
