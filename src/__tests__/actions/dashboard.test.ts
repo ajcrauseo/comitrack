@@ -154,6 +154,30 @@ describe("getDashboardSummary", () => {
     expect(result.data?.purchasesTotal).toBe(20700);
   });
 
+  it("calculates purchase commissions with the new scale from nov/2026", async () => {
+    mockPrisma.technicalService.findMany.mockResolvedValue([]);
+    mockPrisma.devicePurchase.count.mockResolvedValue(2);
+    mockPrisma.deviceSalesMonthly.findUnique.mockResolvedValue(null);
+    mockPrisma.generalSalesMonthly.findUnique.mockResolvedValue(null);
+
+    const result = await getDashboardSummary(11, 2026);
+
+    expect(result.success).toBe(true);
+    expect(result.data?.purchasesTotal).toBe(11600);
+  });
+
+  it("keeps the old purchase scale in oct/2026", async () => {
+    mockPrisma.technicalService.findMany.mockResolvedValue([]);
+    mockPrisma.devicePurchase.count.mockResolvedValue(2);
+    mockPrisma.deviceSalesMonthly.findUnique.mockResolvedValue(null);
+    mockPrisma.generalSalesMonthly.findUnique.mockResolvedValue(null);
+
+    const result = await getDashboardSummary(10, 2026);
+
+    expect(result.success).toBe(true);
+    expect(result.data?.purchasesTotal).toBe(12800);
+  });
+
   it("calculates device sales commissions correctly", async () => {
     mockPrisma.technicalService.findMany.mockResolvedValue([]);
     mockPrisma.devicePurchase.count.mockResolvedValue(0);

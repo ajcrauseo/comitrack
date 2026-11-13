@@ -32,7 +32,7 @@ export async function getDashboardSummary(month: number, year: number) {
       0
     );
 
-    const { total: totalPurchases } = calcPurchaseCommission(purchasesCount);
+    const { total: totalPurchases } = calcPurchaseCommission(purchasesCount, month, year);
 
     const totalDeviceSales = deviceSales
       ? calcDeviceSalesCommission(deviceSales.totalQuantity, deviceSales.totalVolume)

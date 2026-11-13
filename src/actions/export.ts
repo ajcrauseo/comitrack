@@ -98,7 +98,7 @@ export async function getExportData(month: number, year: number) {
 
     // ── Compras ──
     const { perUnit: purchasePerUnit, total: purchaseTotal } =
-      calcPurchaseCommission(purchasesCount);
+      calcPurchaseCommission(purchasesCount, month, year);
 
     // ── Ventas Equipos ──
     const deviceSalesQuantity = deviceSales?.totalQuantity ?? 0;

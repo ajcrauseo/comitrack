@@ -9,6 +9,7 @@ import {
   CapacityKey,
   capacityLabels,
   calcPurchaseCommission,
+  getPurchaseScale,
 } from "@/lib/constants";
 import { formatARS } from "@/lib/utils";
 import { ShoppingCart, Plus, Trash2, Loader2, CalendarDays, Package, Pencil, X, Save } from "lucide-react";
@@ -24,16 +25,17 @@ type Purchase = {
 
 const CAPACITIES = Object.entries(capacityLabels) as [CapacityKey, string][];
 
-function CommissionScale({ count }: { count: number }) {
-  const tiers = [
-    { label: "1 equipo", perUnit: 5800, total: 5800, min: 1, max: 1 },
-    { label: "2 equipos", perUnit: 6400, total: 12800, min: 2, max: 2 },
-    { label: "3 equipos", perUnit: 6900, total: 20700, min: 3, max: 3 },
-    { label: "4+ equipos", perUnit: 7300, total: null, min: 4, max: Infinity },
-  ];
+function CommissionScale({ count, month, year }: { count: number; month: number; year: number }) {
+  const tiers = getPurchaseScale(month, year).map((tier) => ({
+    ...tier,
+    label:
+      tier.max === Infinity
+        ? `${tier.min}+ equipos`
+        : `${tier.min} equipo${tier.min !== 1 ? "s" : ""}`,
+  }));
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+    <div className={`grid grid-cols-2 gap-2 ${tiers.length === 5 ? "sm:grid-cols-5" : "sm:grid-cols-4"}`}>
       {tiers.map((tier) => {
         const active = count >= tier.min && count <= tier.max;
         return (
@@ -101,7 +103,7 @@ export default function ComprasPage() {
 
   useEffect(() => { loadPurchases(); }, [month, year]);
 
-  const commission = calcPurchaseCommission(purchases.length);
+  const commission = calcPurchaseCommission(purchases.length, month, year);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -175,7 +177,7 @@ export default function ComprasPage() {
   };
 
   // After adding, commission changes — show updated values
-  const nextCommission = calcPurchaseCommission(purchases.length + 1);
+  const nextCommission = calcPurchaseCommission(purchases.length + 1, month, year);
 
   return (
     <div className="space-y-5 sm:space-y-6">
@@ -200,7 +202,7 @@ export default function ComprasPage() {
         <p className="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-3">
           Escala de comisiones — {purchases.length} equipo{purchases.length !== 1 ? "s" : ""} este mes
         </p>
-        <CommissionScale count={purchases.length} />
+        <CommissionScale count={purchases.length} month={month} year={year} />
         {purchases.length > 0 && (
           <p className="mt-3 text-xs text-slate-500 text-center">
             Agregar un equipo más cambiaría la comisión a{" "}

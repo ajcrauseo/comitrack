@@ -54,16 +54,41 @@ export const capacityLabels: Record<CapacityKey, string> = {
   TB_2: "2 TB",
 };
 
+export type PurchaseTier = { min: number; max: number; perUnit: number };
+
+const purchaseScaleOld: PurchaseTier[] = [
+  { min: 1, max: 1, perUnit: 5800 },
+  { min: 2, max: 2, perUnit: 6400 },
+  { min: 3, max: 3, perUnit: 6900 },
+  { min: 4, max: Infinity, perUnit: 7300 },
+];
+
+const purchaseScaleNew: PurchaseTier[] = [
+  { min: 1, max: 1, perUnit: 5000 },
+  { min: 2, max: 2, perUnit: 5800 },
+  { min: 3, max: 3, perUnit: 6400 },
+  { min: 4, max: 4, perUnit: 6900 },
+  { min: 5, max: Infinity, perUnit: 7300 },
+];
+
+/** Escala de compras que rige en ese mes/año (nueva desde nov/2026) */
+export function getPurchaseScale(month: number, year: number): PurchaseTier[] {
+  return levelApplies(month, year) ? purchaseScaleNew : purchaseScaleOld;
+}
+
 /** Comisión escalonada por cantidad total de compras en el mes */
-export function calcPurchaseCommission(count: number): {
+export function calcPurchaseCommission(
+  count: number,
+  month: number,
+  year: number
+): {
   perUnit: number;
   total: number;
 } {
   if (count === 0) return { perUnit: 0, total: 0 };
-  if (count === 1) return { perUnit: 5800, total: 5800 };
-  if (count === 2) return { perUnit: 6400, total: 12800 };
-  if (count === 3) return { perUnit: 6900, total: 20700 };
-  return { perUnit: 7300, total: 7300 * count };
+  const scale = getPurchaseScale(month, year);
+  const tier = scale.find((t) => count >= t.min && count <= t.max) ?? scale[scale.length - 1];
+  return { perUnit: tier.perUnit, total: tier.perUnit * count };
 }
 
 // ─── Ventas de Equipos ────────────────────────────────────────────────────────
@@ -205,7 +230,7 @@ const modulePinRatesByLevel: Record<AchievedLevel, number> = {
 };
 
 /** true si en ese mes/año rige el nivel alcanzado (desde nov/2026) */
-function levelApplies(month: number, year: number): boolean {
+export function levelApplies(month: number, year: number): boolean {
   return year * 12 + month >= 2026 * 12 + 11;
 }
 

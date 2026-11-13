@@ -84,4 +84,17 @@ describe("getExportData", () => {
     expect(tech?.records[0].recordTotal).toBe(3000);
     expect(tech?.total).toBe(3000);
   });
+
+  it("exporta en nov/2026 la escala nueva de compras: 2 compras = $11.600", async () => {
+    mockPrisma.technicalService.findMany.mockResolvedValue([]);
+    mockPrisma.devicePurchase.count.mockResolvedValue(2);
+    mockPrisma.deviceSalesMonthly.findUnique.mockResolvedValue(null);
+    mockPrisma.generalSalesMonthly.findUnique.mockResolvedValue(null);
+
+    const exported = await getExportData(11, 2026);
+
+    const purchases = exported.data?.categories.purchases;
+    expect(purchases?.total).toBe(11600);
+    expect(purchases?.perUnit).toBe(5800);
+  });
 });

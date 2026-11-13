@@ -7,6 +7,7 @@ import {
   targetLabels,
   targetRates,
   calcPurchaseCommission,
+  getPurchaseScale,
   calcDeviceSalesCommission,
   calcGeneralSalesCommission,
   calcAchievedLevel,
@@ -101,41 +102,99 @@ describe("targetLabels and targetRates", () => {
 
 describe("calcPurchaseCommission", () => {
   it("returns 0 for 0 purchases", () => {
-    expect(calcPurchaseCommission(0)).toEqual({ perUnit: 0, total: 0 });
+    expect(calcPurchaseCommission(0, 1, 2026)).toEqual({ perUnit: 0, total: 0 });
   });
 
   it("returns $5800/unit for 1 purchase", () => {
-    expect(calcPurchaseCommission(1)).toEqual({ perUnit: 5800, total: 5800 });
+    expect(calcPurchaseCommission(1, 1, 2026)).toEqual({ perUnit: 5800, total: 5800 });
   });
 
   it("returns $6400/unit for 2 purchases", () => {
-    expect(calcPurchaseCommission(2)).toEqual({ perUnit: 6400, total: 12800 });
+    expect(calcPurchaseCommission(2, 1, 2026)).toEqual({ perUnit: 6400, total: 12800 });
   });
 
   it("returns $6900/unit for 3 purchases", () => {
-    expect(calcPurchaseCommission(3)).toEqual({ perUnit: 6900, total: 20700 });
+    expect(calcPurchaseCommission(3, 1, 2026)).toEqual({ perUnit: 6900, total: 20700 });
   });
 
   it("returns $7300/unit for 4 purchases", () => {
-    expect(calcPurchaseCommission(4)).toEqual({ perUnit: 7300, total: 29200 });
+    expect(calcPurchaseCommission(4, 1, 2026)).toEqual({ perUnit: 7300, total: 29200 });
   });
 
   it("returns $7300/unit for 5 purchases", () => {
-    expect(calcPurchaseCommission(5)).toEqual({ perUnit: 7300, total: 36500 });
+    expect(calcPurchaseCommission(5, 1, 2026)).toEqual({ perUnit: 7300, total: 36500 });
   });
 
   it("returns $7300/unit for 10 purchases", () => {
-    expect(calcPurchaseCommission(10)).toEqual({ perUnit: 7300, total: 73000 });
+    expect(calcPurchaseCommission(10, 1, 2026)).toEqual({ perUnit: 7300, total: 73000 });
   });
 
   it("returns $7300/unit for large quantities", () => {
-    expect(calcPurchaseCommission(100)).toEqual({ perUnit: 7300, total: 730000 });
+    expect(calcPurchaseCommission(100, 1, 2026)).toEqual({ perUnit: 7300, total: 730000 });
   });
 
   it("handles negative count gracefully", () => {
-    const result = calcPurchaseCommission(-1);
+    const result = calcPurchaseCommission(-1, 1, 2026);
     expect(result.perUnit).toBe(7300);
     expect(result.total).toBe(-7300);
+  });
+});
+
+describe("calcPurchaseCommission desde nov/2026", () => {
+  it("paga $5000 en total por 1 compra", () => {
+    expect(calcPurchaseCommission(1, 11, 2026).total).toBe(5000);
+  });
+
+  it("paga $11600 en total por 2 compras ($5800 c/u)", () => {
+    expect(calcPurchaseCommission(2, 11, 2026)).toEqual({ perUnit: 5800, total: 11600 });
+  });
+
+  it("paga $19200 en total por 3 compras ($6400 c/u)", () => {
+    expect(calcPurchaseCommission(3, 11, 2026)).toEqual({ perUnit: 6400, total: 19200 });
+  });
+
+  it("paga $27600 en total por 4 compras ($6900 c/u)", () => {
+    expect(calcPurchaseCommission(4, 11, 2026)).toEqual({ perUnit: 6900, total: 27600 });
+  });
+
+  it("paga $7300 c/u desde 5 compras (5 → $36500, 6 → $43800)", () => {
+    expect(calcPurchaseCommission(5, 11, 2026)).toEqual({ perUnit: 7300, total: 36500 });
+    expect(calcPurchaseCommission(6, 11, 2026)).toEqual({ perUnit: 7300, total: 43800 });
+  });
+
+  it("en el borde oct/2026 → nov/2026, 1 compra pasa de $5800 a $5000", () => {
+    expect(calcPurchaseCommission(1, 10, 2026).total).toBe(5800);
+    expect(calcPurchaseCommission(1, 11, 2026).total).toBe(5000);
+  });
+
+  it("un mes posterior (ene/2027) usa la escala nueva", () => {
+    expect(calcPurchaseCommission(1, 1, 2027)).toEqual({ perUnit: 5000, total: 5000 });
+    expect(calcPurchaseCommission(4, 1, 2027)).toEqual({ perUnit: 6900, total: 27600 });
+  });
+
+  it("un mes anterior al corte (mar/2026) mantiene la escala vieja", () => {
+    expect(calcPurchaseCommission(4, 3, 2026)).toEqual({ perUnit: 7300, total: 29200 });
+  });
+
+  it("getPurchaseScale devuelve 5 tramos desde nov/2026 y 4 antes, con los mismos montos que se pagan", () => {
+    expect(getPurchaseScale(11, 2026)).toEqual([
+      { min: 1, max: 1, perUnit: 5000 },
+      { min: 2, max: 2, perUnit: 5800 },
+      { min: 3, max: 3, perUnit: 6400 },
+      { min: 4, max: 4, perUnit: 6900 },
+      { min: 5, max: Infinity, perUnit: 7300 },
+    ]);
+    expect(getPurchaseScale(10, 2026)).toEqual([
+      { min: 1, max: 1, perUnit: 5800 },
+      { min: 2, max: 2, perUnit: 6400 },
+      { min: 3, max: 3, perUnit: 6900 },
+      { min: 4, max: Infinity, perUnit: 7300 },
+    ]);
+    for (const [month, year] of [[10, 2026], [11, 2026]]) {
+      for (const tier of getPurchaseScale(month, year)) {
+        expect(calcPurchaseCommission(tier.min, month, year).perUnit).toBe(tier.perUnit);
+      }
+    }
   });
 });
 
