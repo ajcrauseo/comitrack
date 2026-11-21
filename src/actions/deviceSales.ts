@@ -22,7 +22,7 @@ export async function upsertDeviceSales(
   data: { totalQuantity: number; totalVolume: number }
 ) {
   try {
-    await requireAdmin();
+    const session = await requireAdmin();
     const record = await prisma.deviceSalesMonthly.upsert({
       where: { month_year: { month, year } },
       update: { totalQuantity: data.totalQuantity, totalVolume: data.totalVolume },
@@ -31,6 +31,7 @@ export async function upsertDeviceSales(
         year,
         totalQuantity: data.totalQuantity,
         totalVolume: data.totalVolume,
+        userId: session.userId,
       },
     });
 
