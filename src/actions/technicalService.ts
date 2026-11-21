@@ -38,7 +38,7 @@ export async function addTechnicalService(data: {
   services: { serviceType: ServiceCategory; sku?: string }[];
 }) {
   try {
-    await requireAdmin();
+    const session = await requireAdmin();
     // Verificar si el coders ya existe
     const existing = await prisma.technicalService.findUnique({
       where: { coders: data.coders },
@@ -55,6 +55,7 @@ export async function addTechnicalService(data: {
         date: parseUTCDate(data.date),
         model: data.model,
         branch: data.branch,
+        userId: session.userId,
         services: {
           create: data.services.map(({ serviceType, sku }) => ({
             serviceType,

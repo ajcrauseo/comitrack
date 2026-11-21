@@ -152,6 +152,25 @@ describe("addTechnicalService", () => {
     expect(result.data?.services).toHaveLength(1);
   });
 
+  it("saves the new repair under the logged-in user", async () => {
+    mockPrisma.technicalService.findUnique.mockResolvedValue(null);
+    mockPrisma.technicalService.create.mockResolvedValue({} as never);
+
+    await addTechnicalService({
+      coders: "TS-OWNED",
+      date: "2025-01-15",
+      model: "iPhone 15",
+      branch: "A",
+      services: [{ serviceType: "REVISION_APROBADA" }],
+    });
+
+    expect(mockPrisma.technicalService.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ userId: "test-user-id" }),
+      })
+    );
+  });
+
   it("returns error when coders already exists", async () => {
     mockPrisma.technicalService.findUnique.mockResolvedValue({
       id: "existing",
