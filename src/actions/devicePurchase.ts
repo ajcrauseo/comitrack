@@ -29,7 +29,7 @@ export async function addDevicePurchase(data: {
   capacity: CapacityKey;
 }) {
   try {
-    await requireAdmin();
+    const session = await requireAdmin();
     const existing = await prisma.devicePurchase.findUnique({
       where: { purchaseOrder: data.purchaseOrder },
     });
@@ -43,6 +43,7 @@ export async function addDevicePurchase(data: {
         date: parseUTCDate(data.date),
         model: data.model,
         capacity: data.capacity,
+        userId: session.userId,
       },
     });
 

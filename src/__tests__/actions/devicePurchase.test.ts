@@ -81,6 +81,24 @@ describe("addDevicePurchase", () => {
     expect(result.data).toEqual(newPurchase);
   });
 
+  it("saves the new purchase under the logged-in user", async () => {
+    mockPrisma.devicePurchase.findUnique.mockResolvedValue(null);
+    mockPrisma.devicePurchase.create.mockResolvedValue({} as never);
+
+    await addDevicePurchase({
+      purchaseOrder: "OC-OWNED",
+      date: "2025-01-15",
+      model: "iPhone 15",
+      capacity: "GB_256",
+    });
+
+    expect(mockPrisma.devicePurchase.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ userId: "test-user-id" }),
+      })
+    );
+  });
+
   it("returns error when purchase order already exists", async () => {
     mockPrisma.devicePurchase.findUnique.mockResolvedValue({
       id: "p-existing",
@@ -145,6 +163,21 @@ describe("updateDevicePurchase", () => {
 
     expect(result.success).toBe(true);
     expect(result.data).toEqual(updated);
+  });
+
+  it("does not change the owner when editing an existing purchase", async () => {
+    mockPrisma.devicePurchase.findFirst.mockResolvedValue(null);
+    mockPrisma.devicePurchase.update.mockResolvedValue({} as never);
+
+    await updateDevicePurchase("p1", {
+      purchaseOrder: "OC-UPD",
+      date: "2025-01-20",
+      model: "iPhone 16",
+      capacity: "GB_512",
+    });
+
+    const call = mockPrisma.devicePurchase.update.mock.calls[0][0];
+    expect(call.data).not.toHaveProperty("userId");
   });
 
   it("returns error when order exists in another record", async () => {
