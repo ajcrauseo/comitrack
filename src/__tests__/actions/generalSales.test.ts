@@ -124,6 +124,27 @@ describe("upsertGeneralSales", () => {
     expect(result.data).toEqual(newRecord);
   });
 
+  it("saves a new month under the logged-in user", async () => {
+    mockPrisma.generalSalesMonthly.upsert.mockResolvedValue({} as never);
+
+    await upsertGeneralSales(1, 2025, { grossSalesVolume: 1000000, target: "LESS_THAN_100" });
+
+    expect(mockPrisma.generalSalesMonthly.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({ userId: "test-user-id" }),
+      })
+    );
+  });
+
+  it("editing an existing month does not change its owner", async () => {
+    mockPrisma.generalSalesMonthly.upsert.mockResolvedValue({} as never);
+
+    await upsertGeneralSales(1, 2025, { grossSalesVolume: 500000, target: "LESS_THAN_100" });
+
+    const call = mockPrisma.generalSalesMonthly.upsert.mock.calls[0][0];
+    expect(call.update).not.toHaveProperty("userId");
+  });
+
   it("updates an existing record", async () => {
     const updated = {
       id: "gs-1",

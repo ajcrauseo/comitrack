@@ -42,7 +42,7 @@ export async function upsertGeneralSales(
   }
 ) {
   try {
-    await requireAdmin();
+    const session = await requireAdmin();
     if (!areGoalsInOrder(data.unitsMinimum, data.unitsTarget, data.unitsVeryGood)) {
       return {
         success: false,
@@ -60,7 +60,7 @@ export async function upsertGeneralSales(
     const record = await prisma.generalSalesMonthly.upsert({
       where: { month_year: { month, year } },
       update: fields,
-      create: { month, year, ...fields },
+      create: { month, year, ...fields, userId: session.userId },
     });
 
     revalidatePath("/ventas-generales");
